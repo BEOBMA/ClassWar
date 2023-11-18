@@ -5,6 +5,7 @@ package org.beobma.classwar
 import org.beobma.classwar.GAMEMANAGER.Companion.reset
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
+import org.bukkit.GameMode
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
@@ -35,10 +36,12 @@ class CLASSWAR : JavaPlugin(), Listener {
         if (GAMEMANAGER.onlinePlayers.contains(player)) {
             player.scoreboard.teams.clear()
             player.closeInventory()
+            player.setPlayerListName(player.name)
             player.scoreboardTags.clear()
+            player.gameMode = GameMode.ADVENTURE
             reset()
-            val quitMessage = "${ChatColor.RED}${ChatColor.BOLD}[!] 게임 진행 도중 게임을 종료한 플레이어가 존재하여 게임이 중지되었습니다."
-            Bukkit.broadcastMessage(quitMessage)
+            Bukkit.broadcastMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 게임 진행 도중 게임을 종료한 플레이어가 존재하여 게임이 중지되었습니다.")
+
         }
     }
 
