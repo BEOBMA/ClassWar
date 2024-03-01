@@ -1,0 +1,9 @@
+name: CLASSWAR
+version: '${version}'
+main: org.beobma.classwar.CLASSWAR
+api-version: '1.20'
+
+commands:
+  classwar:
+    description: CLASSWAR 메인 명령어
+    aliases: [ cw, 클래스대전 ]
