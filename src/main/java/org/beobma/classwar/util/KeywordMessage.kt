@@ -157,4 +157,18 @@ object KeywordMessage {
     fun untargetabilityKeyword(): String {
         return "${ChatColor.DARK_GRAY}${ChatColor.BOLD}대상 지정 불가${ChatColor.RESET}${ChatColor.GRAY}"
     }
+
+    /**
+     * @return 침묵
+     */
+    fun silenceKeyword(): String {
+        return "${ChatColor.DARK_GRAY}${ChatColor.BOLD}침묵${ChatColor.RESET}${ChatColor.GRAY}"
+    }
+
+    /**
+     * @return 스킬 체크
+     */
+    fun skillCheckKeyword(): String {
+        return "${ChatColor.GOLD}${ChatColor.BOLD}스킬 체크${ChatColor.RESET}${ChatColor.GRAY}"
+    }
 }

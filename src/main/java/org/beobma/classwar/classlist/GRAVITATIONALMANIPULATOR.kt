@@ -77,12 +77,11 @@ class GRAVITATIONALMANIPULATOR : Listener {
                                     if (players.isTeam("BlueTeam")) {
                                         if (!players.isOnGround) {
                                             players.damageHealth(
-                                                15, gravitationalmanipulator.getSkillName(1), player
+                                                15, gravitationalmanipulator.getSkillName(1), players
                                             )
                                         } else {
-
                                             players.damageHealth(
-                                                5, gravitationalmanipulator.getSkillName(1), player
+                                                5, gravitationalmanipulator.getSkillName(1), players
                                             )
                                         }
                                     }
@@ -90,11 +89,11 @@ class GRAVITATIONALMANIPULATOR : Listener {
                                     if (player.isTeam("RedTeam")) {
                                         if (!players.isOnGround) {
                                             players.damageHealth(
-                                                15, gravitationalmanipulator.getSkillName(1), player
+                                                15, gravitationalmanipulator.getSkillName(1), players
                                             )
                                         } else {
                                             players.damageHealth(
-                                                5, gravitationalmanipulator.getSkillName(1), player
+                                                5, gravitationalmanipulator.getSkillName(1), players
                                             )
                                         }
                                     }

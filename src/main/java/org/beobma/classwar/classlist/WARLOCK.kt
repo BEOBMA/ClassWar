@@ -28,8 +28,10 @@ import org.bukkit.scheduler.BukkitTask
 
 class WARLOCK : Listener {
 
-    private var chance: Int = 2
-    private var task: BukkitTask? = null
+    companion object {
+        private var chance: Int = 2
+        private var task: BukkitTask? = null
+    }
 
     @EventHandler
     fun onGameStart(event: GameStartEvent) {
@@ -92,7 +94,7 @@ class WARLOCK : Listener {
                                     if (targetPlayer.isSkillTarget()) {
                                         if (targetPlayer.isFatalWound()) {
                                             targetPlayer.damage(3.0)
-                                            player.health += 1.5
+                                            player.health += 0.075
                                         } else {
                                             targetPlayer.damage(2.0)
                                         }
@@ -138,10 +140,10 @@ class WARLOCK : Listener {
                                                 if (targetPlayer != shootResort) {
                                                     if (targetPlayer.isFatalWound()) {
                                                         targetPlayer.damage(3.0)
-                                                        player.health += 1.5
+                                                        player.health += 0.075
                                                     } else {
                                                         targetPlayer.damage(2.0)
-                                                        player.health += 1.0
+                                                        player.health += 0.075
                                                     }
                                                 }
                                             }

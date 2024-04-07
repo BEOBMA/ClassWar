@@ -77,13 +77,16 @@ class ARCHER : Listener {
         }
     }
 
-    private var isUsed: Boolean = false
+
+    companion object {
+        private var isUsed: Boolean = false
+    }
 
     @EventHandler
     fun onPlayerDamage(event: EntityDamageByEntityEvent) {
         val damagedEntity = event.entity
 
-        if (GameManager.isGaming) {
+        if (GameManager.isStarting) {
             if (!isUsed) {
                 if (damagedEntity.scoreboardTags.contains(archer.name) && damagedEntity is Player) {
                     if (damagedEntity.health - event.damage <= 20) {

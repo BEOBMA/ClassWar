@@ -3,7 +3,7 @@
 package org.beobma.classwar.classlist
 
 import org.beobma.classwar.CLASSWAR
-import org.beobma.classwar.GameManager.Companion.isGaming
+import org.beobma.classwar.GameManager
 import org.beobma.classwar.LOCALIZATION.Companion.firewizard
 import org.beobma.classwar.event.SkillUsingEvent
 import org.beobma.classwar.util.Particle.Companion.spawnParticleRadius
@@ -132,7 +132,7 @@ class FIREWIZARD : Listener {
         val damagedEntity = event.damager
         val damagerEntity = event.entity
 
-        if (isGaming) {
+        if (GameManager.isGaming) {
             if (damagerEntity.scoreboardTags.contains(firewizard.name) && damagerEntity is Player) {
                 if (damagedEntity is Player) {
                     damagedEntity.addBurn(1)

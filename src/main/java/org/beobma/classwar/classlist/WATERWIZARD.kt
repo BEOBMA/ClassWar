@@ -3,7 +3,7 @@
 package org.beobma.classwar.classlist
 
 import org.beobma.classwar.CLASSWAR
-import org.beobma.classwar.GameManager.Companion.isGaming
+import org.beobma.classwar.GameManager.Companion.isStarting
 import org.beobma.classwar.LOCALIZATION.Companion.waterwizard
 import org.beobma.classwar.event.MarkerHitEvent
 import org.beobma.classwar.event.MarkerMoveEvent
@@ -144,7 +144,7 @@ class WATERWIZARD : Listener {
     fun onPlayerDamage(event: EntityDamageByEntityEvent) {
         val damagerEntity = event.entity
 
-        if (isGaming) {
+        if (isStarting) {
             if (damagerEntity.scoreboardTags.contains("waterwizard_shield") && damagerEntity is Player) {
                 if (!damagerEntity.hasPotionEffect(PotionEffectType.ABSORPTION)) {
                     if (damagerEntity.isTeam("RedTeam")) {

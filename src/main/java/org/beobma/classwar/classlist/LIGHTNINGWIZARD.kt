@@ -27,8 +27,10 @@ import kotlin.math.sin
 
 class LIGHTNINGWIZARD : Listener {
 
-    var marker: MutableList<Location> = mutableListOf()
-    private var task: BukkitTask? = null
+    companion object {
+        var marker: MutableList<Location> = mutableListOf()
+        private var task: BukkitTask? = null
+    }
 
     @EventHandler
     fun onGameStart(event: GameStartEvent) {

@@ -14,6 +14,8 @@ import org.beobma.classwar.util.KeywordMessage.healKeyword
 import org.beobma.classwar.util.KeywordMessage.invisibilityStateKeyword
 import org.beobma.classwar.util.KeywordMessage.moveSpeedKeyword
 import org.beobma.classwar.util.KeywordMessage.shieldKeyword
+import org.beobma.classwar.util.KeywordMessage.silenceKeyword
+import org.beobma.classwar.util.KeywordMessage.skillCheckKeyword
 import org.beobma.classwar.util.KeywordMessage.slowKeyword
 import org.beobma.classwar.util.KeywordMessage.stunKeyword
 import org.beobma.classwar.util.KeywordMessage.untargetabilityKeyword
@@ -177,7 +179,7 @@ class LOCALIZATION {
         }, ItemStack(Material.RED_DYE, 1).apply {
             itemMeta = itemMeta.apply {
                 setDisplayName(
-                    "${ChatColor.YELLOW}${ChatColor.BOLD}암살"
+                    "${ChatColor.YELLOW}${ChatColor.BOLD}삼연궁"
                 ); lore = arrayListOf(
                 "${ChatColor.GOLD}화살 3개를 소모함", "", "${ChatColor.GRAY}화살 3개를 동시에 발사하여 적중한 적에게 20의 피해를 입힙니다."
             )
@@ -187,7 +189,8 @@ class LOCALIZATION {
                 setDisplayName(
                     "${ChatColor.RED}${ChatColor.BOLD}생존 본능"
                 ); lore = arrayListOf(
-                "${ChatColor.GRAY}게임당 한 번, 피격될 때 체력이 50% 이하로 내려간다면 그 공격을 무효로 하고 4초 동안 ${invisibilityStateKeyword()}가 됩니다."
+                "${ChatColor.GRAY}게임당 한 번, 피격될 때 체력이 50% 이하로 내려간다면",
+                "${ChatColor.GRAY} 그 공격을 무효로 하고 4초 동안 ${invisibilityStateKeyword()}가 됩니다."
             )
             }
         }), arrayListOf(ItemStack(Material.ARROW, 30).apply {
@@ -224,7 +227,8 @@ class LOCALIZATION {
                     "${ChatColor.BLUE}마나 100을 소모함",
                     "",
                     "${ChatColor.GRAY}자신 위치에 마법진을 만듭니다.",
-                    "${ChatColor.GRAY}3초 후 불기둥이 떨어지며 적중한 모든 대상에게 30의 피해를 입히고 ${burnKeyword(5)}를 부여합니다.",
+                    "${ChatColor.GRAY}3초 후 불기둥이 떨어지며 적중한 모든 대상에게",
+                    "${ChatColor.GRAY} 30의 피해를 입히고 ${burnKeyword(5)}를 부여합니다.",
                     "",
                     "${burnKeyword()}: 수치에 비례한 시간동안 불에 타오릅니다."
                 )
@@ -785,7 +789,8 @@ class LOCALIZATION {
                     "${ChatColor.GRAY}한 번이라도 ${abyssKeyword()}상태였던 적은 ${ChatColor.GOLD}${ChatColor.BOLD}공포${ChatColor.RESET}${ChatColor.GRAY} 상태가 됩니다.",
                     "",
                     "${abyssKeyword()}: 2초간 시야가 극도로 좁아집니다.",
-                    "${ChatColor.GOLD}${ChatColor.BOLD}공포${ChatColor.RESET}${ChatColor.GRAY}: ${abyssKeyword()}의 지속 시간이 증가하며 침묵되고, 알 수 없는 소리가 들립니다."
+                    "${ChatColor.GOLD}${ChatColor.BOLD}공포${ChatColor.RESET}${ChatColor.GRAY}: ${abyssKeyword()}의 지속 시간이 증가하며 ${silenceKeyword()}되고, 알 수 없는 소리가 들립니다.",
+                    "${silenceKeyword()}: 스킬을 사용할 수 없습니다."
                 )
                 }
             }, ItemStack(Material.WHITE_DYE, 1).apply {
@@ -832,6 +837,7 @@ class LOCALIZATION {
                     ); lore = arrayListOf(
                     "${ChatColor.GRAY}바라보는 아군은 3초간 사망하지 않으며 이후 3초간 ${untargetabilityKeyword()} 상태가 됩니다.",
                     "",
+                    "${ChatColor.DARK_GRAY}바라보는 대상이 없으면 자신에게 시전합니다.",
                     "${untargetabilityKeyword()}: 스킬의 대상이 될 수 없습니다."
                 )
                 }
@@ -937,7 +943,7 @@ class LOCALIZATION {
                         "${ChatColor.YELLOW}${ChatColor.BOLD}직육면체 전개"
                     ); lore = arrayListOf(
                     "${ChatColor.GRAY}현재 존재하는 모든 직육면체를 전개하고 제거합니다.",
-                    "${ChatColor.GRAY}직육면체 내부에 존재하던 적에게 ${ChatColor.GOLD}${ChatColor.BOLD}모든 직육면체의 개수 x 3${ChatColor.RESET}${ChatColor.GRAY}의 피해를 입힙니다."
+                    "${ChatColor.GRAY}직육면체 내부에 존재하던 적에게 ${ChatColor.GOLD}${ChatColor.BOLD}모든 직육면체의 개수 x 3${ChatColor.RESET}${ChatColor.GRAY}의 피해를 입힙니다. (최대 30)"
                 )
                 }
             }, ItemStack(Material.WHITE_DYE, 1).apply {
@@ -950,6 +956,171 @@ class LOCALIZATION {
                 }
             })
         )
+
+        val physicist = Class(
+            "${ChatColor.BOLD}물리학자", arrayListOf(
+                "${ChatColor.GRAY}학문 계열 마법사", "", "물리학자는 양자역학의 이중성을 이용해 공격합니다. 상당한 숙련도를 요구합니다., "
+            ), wizardweapon, arrayListOf(ItemStack(Material.BLACK_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.BLUE}${ChatColor.BOLD}광전 효과"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}물리학자의 현재 상태에 따라 이하의 효과가 적용됩니다.",
+                    "",
+                    "${ChatColor.GRAY}입자 상태 - 광자를 발사하여 적중한 적에게 ??의 피해를 입힙니다.",
+                    "${ChatColor.GRAY}파동 상태 - 자신 주위 적에게 ??의 피해를 입힙니다.",
+                    "${ChatColor.GOLD}동시 상태 - 적에게 쌍전자를 발사합니다. 적중한 적에게 ??의 피해를 입히고,",
+                    "${ChatColor.GOLD}             전자를 폭파시킨 다음 주위 적중한 대상에게 ??의 피해를 추가로 입힙니다.",
+                    "",
+                    "${ChatColor.GRAY}이후 동시 상태가 아니였다면 반대 상태로 변경됩니다."
+                )
+                }
+            }, ItemStack(Material.ORANGE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.GREEN}${ChatColor.BOLD}양자 중첩"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}??초간 입자와 파동 상태를 중첩하여 ${ChatColor.GOLD}${ChatColor.BOLD}동시 상태${ChatColor.RESET}${ChatColor.GRAY}가 됩니다.",
+                    "${ChatColor.GRAY}이 시간동안 광전 효과의 ${ChatColor.BOLD}재사용 대기시간${ChatColor.RESET}${ChatColor.GRAY}이 감소합니다."
+                )
+                }
+            }, ItemStack(Material.RED_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.YELLOW}${ChatColor.BOLD}슈뢰딩거의 상자"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}바라보는 적에게 즉시 ??의 피해를 입힙니다.", "${ChatColor.GRAY}이 스킬의 계수 최댓값은 40입니다."
+                )
+                }
+            }, ItemStack(Material.WHITE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.RED}${ChatColor.BOLD}관측"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}물리학자의 모든 스킬 계수가 무작위의 숫자로 설정됩니다. (최대 10)",
+                )
+                }
+            })
+        )
+
+        val paladinweapon = ItemStack(Material.IRON_PICKAXE, 1).apply {
+            itemMeta = itemMeta.apply {
+                setDisplayName("${ChatColor.BOLD}팔라딘의 망치")
+                lore = arrayListOf(
+                    "${ChatColor.GRAY}빛이 일렁입니다...."
+                )
+                isUnbreakable = true
+            }
+        }
+
+        val paladin = Class(
+            "${ChatColor.BOLD}팔라딘", arrayListOf(
+                "${ChatColor.GRAY}빛 계열 전사", "", "팔라딘은 빛의 힘을 사용하여 적을 심판합니다., "
+            ), wizardweapon, arrayListOf(ItemStack(Material.BLACK_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.BLUE}${ChatColor.BOLD}맹세"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}3초간 자신의 기본 공격 피해가 2 증가합니다.",
+                    "${ChatColor.GRAY}만약 대상이 ${ChatColor.YELLOW}${ChatColor.BOLD}어둠 계열 클래스${ChatColor.RESET}${ChatColor.GRAY}라면 추가로 1초간 ${silenceKeyword()}시킵니다.",
+                    "",
+                    "${silenceKeyword()}: 스킬을 사용할 수 없습니다."
+                )
+                }
+            }, ItemStack(Material.ORANGE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.GREEN}${ChatColor.BOLD}빛의 강타"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}3칸 내 바라보는 적에게 10의 피해를 입힙니다.",
+                    "${ChatColor.GRAY}대상의 체력이 50% 이하라면 ${brillianceKeyword()} 상태를 부여합니다.",
+                    "${ChatColor.GRAY}이미 ${brillianceKeyword()} 상태였다면 2초간 ${stunKeyword()}합니다.",
+                    "",
+                    "${brillianceKeyword()}: 5초간 유지되며 유지 시간동안 위치를 드러냅니다.",
+                )
+                }
+            }, ItemStack(Material.RED_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.YELLOW}${ChatColor.BOLD}빛의 방패"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}다음 3번의 공격으로부터 절반의 피해를 입습니다."
+                )
+                }
+            }, ItemStack(Material.WHITE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.RED}${ChatColor.BOLD}복수의 맹세"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}자신에게 기본 공격으로 피해를 입힌 적에게 표식을 부여합니다.",
+                    "${ChatColor.GRAY}표식을 가진 적은 팔라딘의 기본 공격으로 2의 피해를 추가로 입습니다.",
+                )
+                }
+            })
+        )
+
+        val bardweapon = ItemStack(Material.GOAT_HORN, 1).apply {
+            itemMeta = itemMeta.apply {
+                setDisplayName("${ChatColor.BOLD}호른")
+                lore = arrayListOf(
+                    "${ChatColor.GRAY}아무 효과도 없습니다. 그냥 호른입니다."
+                )
+            }
+        }
+
+        val bard = Class(
+            "${ChatColor.BOLD}바드", arrayListOf(
+                "${ChatColor.GRAY}만능형 서포터", "", "바드는 음악을 연주하여 아군에게 여러 버프를 줍니다., "
+            ), wizardweapon, arrayListOf(ItemStack(Material.BLACK_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.BLUE}${ChatColor.BOLD}기민함의 선율"
+                    ); lore = arrayListOf(
+                    skillCheckKeyword(),
+                    "",
+                    "${ChatColor.GRAY}연주를 지속하는 한, 자신과 자신 주위 아군의 ${moveSpeedKeyword(20)} 증가합니다.",
+                    "",
+                    "${skillCheckKeyword()}: 소리가 재생됩니다.",
+                    "${ChatColor.GRAY}7번째 박자에 스킬을 사용하면 스킬을 지속하여 사용할 수 있습니다."
+                )
+                }
+            }, ItemStack(Material.ORANGE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.GREEN}${ChatColor.BOLD}수복의 선율"
+                    ); lore = arrayListOf(
+                    skillCheckKeyword(),
+                    "",
+                    "${ChatColor.GRAY}연주를 지속하는 한, 1초를 기준으로 자신과 자신 주위 아군의 ${healKeyword(2)}시킵니다.",
+                    "",
+                    "${skillCheckKeyword()}: 소리가 재생됩니다.",
+                    "${ChatColor.GRAY}7번째 박자에 스킬을 사용하면 스킬을 지속하여 사용할 수 있습니다."
+                )
+                }
+            }, ItemStack(Material.RED_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.YELLOW}${ChatColor.BOLD}그림자의 선율"
+                    ); lore = arrayListOf(
+                    skillCheckKeyword(),
+                    "",
+                    "${ChatColor.GRAY}연주를 지속하는 한, 자신 주위 아군만 ${untargetabilityKeyword()} 상태로 만듭니다.",
+                    "",
+                    "${skillCheckKeyword()}: 소리가 재생됩니다.",
+                    "${ChatColor.GRAY}7번째 박자에 스킬을 사용하면 스킬을 지속하여 사용할 수 있습니다."
+                )
+                }
+            }, ItemStack(Material.WHITE_DYE, 1).apply {
+                itemMeta = itemMeta.apply {
+                    setDisplayName(
+                        "${ChatColor.RED}${ChatColor.BOLD}연주의 대가"
+                    ); lore = arrayListOf(
+                    "${ChatColor.GRAY}자신이 연주를 지속하는 한, 자신이 ${damageReductionKeyword(20)} 감소합니다."
+                )
+                }
+            })
+        )
+
 
         val classList: MutableList<String> = mutableListOf(
             berserker.name,
@@ -968,7 +1139,10 @@ class LOCALIZATION {
             darkwizard.name,
             priests.name,
             warlock.name,
-            mathematician.name
+            mathematician.name,
+            physicist.name,
+            paladin.name,
+            bard.name
         )
     }
 }

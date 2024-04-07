@@ -6,7 +6,7 @@ import net.md_5.bungee.api.ChatColor
 import org.beobma.classwar.CLASSWAR
 import org.beobma.classwar.Class
 import org.beobma.classwar.GameManager
-import org.beobma.classwar.GameManager.Companion.isGaming
+import org.beobma.classwar.GameManager.Companion.isStarting
 import org.beobma.classwar.GameManager.Companion.onlinePlayers
 import org.beobma.classwar.LOCALIZATION.Companion.gambler
 import org.beobma.classwar.LOCALIZATION.Companion.warlock
@@ -39,7 +39,19 @@ class Skill : Listener {
         fun Player.attackSpeed(duration: Int, amplifier: Int) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 10) - 1
-            player!!.addPotionEffect(PotionEffect(PotionEffectType.FAST_DIGGING, ticks, strength, false, false, true))
+            if (player!!.hasPotionEffect(PotionEffectType.FAST_DIGGING)) {
+                val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.FAST_DIGGING)?.amplifier
+                val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.FAST_DIGGING)?.duration
+                val reStrength = playerPotionAmplifier!! + strength
+                val reTicks = playerPotionDuration!! + ticks
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.FAST_DIGGING, reTicks, reStrength, false, false, true
+                    )
+                )
+            } else {
+                player!!.addPotionEffect(PotionEffect(PotionEffectType.FAST_DIGGING, ticks, strength, false, false, true))
+            }
         }
 
         /**
@@ -49,11 +61,19 @@ class Skill : Listener {
         fun Player.attackDamage(duration: Int, amplifier: Int) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 3) - 1
-            player!!.addPotionEffect(
-                PotionEffect(
-                    PotionEffectType.INCREASE_DAMAGE, ticks, strength, false, false, true
+            if (player!!.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.INCREASE_DAMAGE)?.amplifier
+                val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.INCREASE_DAMAGE)?.duration
+                val reStrength = playerPotionAmplifier!! + strength
+                val reTicks = playerPotionDuration!! + ticks
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.INCREASE_DAMAGE, reTicks, reStrength, false, false, true
+                    )
                 )
-            )
+            } else {
+                player!!.addPotionEffect(PotionEffect(PotionEffectType.INCREASE_DAMAGE, ticks, strength, false, false, true))
+            }
         }
 
 
@@ -62,19 +82,20 @@ class Skill : Listener {
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 감소시 효과의 위력을 나타냅니다 (단위 20%의 배수)*/
         fun Player.damageReduction(duration: Int, amplifier: Int) {
+            val ticks = secondsToTicks(duration)
             val strength = (amplifier / 20) - 1
-            if (duration == INFINITE_DURATION) {
+            if (player!!.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)?.amplifier
+                val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)?.duration
+                val reStrength = playerPotionAmplifier!! + strength
+                val reTicks = playerPotionDuration!! + ticks
                 player!!.addPotionEffect(
                     PotionEffect(
-                        PotionEffectType.DAMAGE_RESISTANCE, INFINITE_DURATION, strength, false, false, true
+                        PotionEffectType.DAMAGE_RESISTANCE, reTicks, reStrength, false, false, true
                     )
                 )
             } else {
-                player!!.addPotionEffect(
-                    PotionEffect(
-                        PotionEffectType.DAMAGE_RESISTANCE, secondsToTicks(duration), strength, false, false, true
-                    )
-                )
+                player!!.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, ticks, strength, false, false, true))
             }
         }
 
@@ -83,19 +104,20 @@ class Skill : Listener {
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 증가시 효과의 위력을 나타냅니다 (단위 20%의 배수)*/
         fun Player.speedIncrease(duration: Int, amplifier: Int) {
+            val ticks = secondsToTicks(duration)
             val strength = (amplifier / 20) - 1
-            if (duration == INFINITE_DURATION) {
+            if (player!!.hasPotionEffect(PotionEffectType.SPEED)) {
+                val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.SPEED)?.amplifier
+                val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.SPEED)?.duration
+                val reStrength = playerPotionAmplifier!! + strength
+                val reTicks = playerPotionDuration!! + ticks
                 player!!.addPotionEffect(
                     PotionEffect(
-                        PotionEffectType.SPEED, INFINITE_DURATION, strength, false, false, true
+                        PotionEffectType.SPEED, reTicks, reStrength, false, false, true
                     )
                 )
             } else {
-                player!!.addPotionEffect(
-                    PotionEffect(
-                        PotionEffectType.SPEED, secondsToTicks(duration), strength, false, false, true
-                    )
-                )
+                player!!.addPotionEffect(PotionEffect(PotionEffectType.SPEED, ticks, strength, false, false, true))
             }
         }
 
@@ -162,7 +184,7 @@ class Skill : Listener {
                 finalDamage = (finalDamage + (10 * 0.1)).toInt()
                 GameManager.gamingPlayer?.forEach {
                     if (it.scoreboardTags.contains(warlock.name)) {
-                        it.healingHealth(finalDamage / 2, warlock.getSkillName(0), it)
+                        it.healingHealth((finalDamage / 2) / 20, warlock.getSkillName(0), it)
                     }
                 }
             }
@@ -224,7 +246,7 @@ class Skill : Listener {
             player!!.inventory.setItem(slot, null)
             CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
                 if (player != null) {
-                    if (isGaming) {
+                    if (isStarting) {
                         player?.inventory?.setItem(slot, itemstack)
                     } else if (player!!.scoreboardTags.contains("training")) {
                         player?.inventory?.setItem(slot, itemstack)
@@ -626,7 +648,7 @@ class Skill : Listener {
                     val card = cards.removeAt(0)
                     if (card.type == "Special") {
                         if (player!!.scoreboard.getObjective("SpecialCardCount")!!.getScore(player!!.name).score == 4) {
-                            if (isGaming) {
+                            if (isStarting) {
                                 if (player!!.isTeam("RedTeam")) {
                                     specialVictory("RedTeam", gambler)
                                 } else {
@@ -984,9 +1006,9 @@ class Skill : Listener {
         }
 
         /**
-         * 두 직육면체가 겹치는지 확인합니다. (절대값을 기준으로 함)
+         * 두 직육면체가 겹치는지 확인합니다.
          *
-         * @param loc1A 첫 번째 직육면체를 정의하는 첫 번째 위치 (위치의 경우 일반 월드를 기준으로 해야함)
+         * @param loc1A 첫 번째 직육면체를 정의하는 첫 번째 위치
          * @param loc2A 첫 번째 직육면체를 정의하는 두 번째 위치
          * @param loc1B 두 번째 직육면체를 정의하는 첫 번째 위치
          * @param loc2B 두 번째 직육면체를 정의하는 두 번째 위치

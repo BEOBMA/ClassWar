@@ -3,6 +3,8 @@
 package org.beobma.classwar
 
 import org.beobma.classwar.LOCALIZATION.Companion.archer
+import org.beobma.classwar.LOCALIZATION.Companion.bard
+import org.beobma.classwar.LOCALIZATION.Companion.bardweapon
 import org.beobma.classwar.LOCALIZATION.Companion.berserker
 import org.beobma.classwar.LOCALIZATION.Companion.darkwizard
 import org.beobma.classwar.LOCALIZATION.Companion.firewizard
@@ -16,6 +18,9 @@ import org.beobma.classwar.LOCALIZATION.Companion.lightwizard
 import org.beobma.classwar.LOCALIZATION.Companion.map_list
 import org.beobma.classwar.LOCALIZATION.Companion.mathematician
 import org.beobma.classwar.LOCALIZATION.Companion.nullpane
+import org.beobma.classwar.LOCALIZATION.Companion.paladin
+import org.beobma.classwar.LOCALIZATION.Companion.paladinweapon
+import org.beobma.classwar.LOCALIZATION.Companion.physicist
 import org.beobma.classwar.LOCALIZATION.Companion.priests
 import org.beobma.classwar.LOCALIZATION.Companion.priestsweapon
 import org.beobma.classwar.LOCALIZATION.Companion.spaceoperator
@@ -54,11 +59,13 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffect.INFINITE_DURATION
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.Team
 import java.util.*
 
@@ -71,6 +78,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         var randomMap = map_list.random()
         private var shuffledPlayers = onlinePlayers.shuffled()
         private var currentIndex = 0
+        var isStarting = false
         var isGaming = false
         private var menu: Inventory = Bukkit.createInventory(null, 27, "${ChatColor.BOLD}클래스 선택")
 
@@ -109,10 +117,14 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, priests.name, priests.description))
             menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, warlock.name, warlock.description))
             menu.setItem(16, createMenuItem(Material.STONE, mathematician.name, mathematician.description))
+            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, physicist.name, physicist.description))
+            menu.setItem(18, createMenuItem(Material.BELL, paladin.name, paladin.description))
+            menu.setItem(19, createMenuItem(Material.GOAT_HORN, bard.name, bard.description))
         }
 
         fun reset() {
             currentIndex = 0
+            isStarting = false
             isGaming = false
             time = 0
 
@@ -135,6 +147,9 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, priests.name, priests.description))
             menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, warlock.name, warlock.description))
             menu.setItem(16, createMenuItem(Material.STONE, mathematician.name, mathematician.description))
+            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, physicist.name, physicist.description))
+            menu.setItem(18, createMenuItem(Material.BELL, paladin.name, paladin.description))
+            menu.setItem(19, createMenuItem(Material.GOAT_HORN, bard.name, bard.description))
         }
     }
 
@@ -142,7 +157,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         onlinePlayers = Bukkit.getOnlinePlayers()
         gamingPlayer = Bukkit.getOnlinePlayers()
         shuffledPlayers = onlinePlayers.shuffled()
-        isGaming = true
+        isStarting = true
 
         for (targetPlayer in onlinePlayers) {
             if (targetPlayer.scoreboardTags.contains("training")) {
@@ -161,11 +176,11 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
 
         CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-            /**if (onlinePlayers.size <= 1) {
+            if (onlinePlayers.size <= 1) {
                 Bukkit.broadcastMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 참가자가 1명 이하이므로 게임을 시작할 수 없습니다.")
                 gameEnd()
                 return@Runnable
-            }*/
+            }
 
 
             Bukkit.broadcastMessage("${ChatColor.YELLOW}- 참가자 목록 -")
@@ -234,16 +249,15 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 }
             }
 
-            /**if (teams["RedTeam"]?.players?.isEmpty() == true) {
-                Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
-                gameEnd()
-                return@Runnable
+            if (teams["RedTeam"]?.players?.isEmpty() == true) {
+            Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
+            gameEnd()
+            return@Runnable
             } else if (teams["BlueTeam"]?.players?.isEmpty() == true) {
-                Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
-                gameEnd()
-                return@Runnable
+            Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
+            gameEnd()
+            return@Runnable
             }
-            */
 
             Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}팀 등록이 완료되었습니다.")
             broadcastTeamPlayers(teams["RedTeam"], "레드")
@@ -283,17 +297,20 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 player.location.world.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F)
                 var seconds = 5
 
-                CLASSWAR.instance.server.scheduler.runTaskTimer(CLASSWAR.instance, Runnable {
-                    if (seconds > 0) {
-                        Bukkit.getServer().broadcastMessage("${ChatColor.YELLOW}${seconds}초 후 게임이 시작됩니다.")
-                        onlinePlayers.forEach {
-                            it.location.world.playSound(it.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0F, 1.0F)
+                object : BukkitRunnable() {
+                    override fun run() {
+                        if (seconds > 0) {
+                            Bukkit.getServer().broadcastMessage("${ChatColor.YELLOW}${seconds}초 후 게임이 시작됩니다.")
+                            onlinePlayers.forEach {
+                                it.location.world.playSound(it.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0F, 1.0F)
+                            }
+                            seconds--
+                        } else {
+                            gameStart()
+                            this.cancel()
                         }
-                        seconds--
-                    } else {
-                        gameStart()
                     }
-                }, 20L, 20L)
+                }.runTaskTimer(CLASSWAR.instance, 20L, 20L)
             }
         }, 2L, 4L)
 
@@ -305,6 +322,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
     fun gameStart() {
 
 
+        isGaming = true
         onlinePlayers.forEach { player ->
             if (player.scoreboardTags.contains("game_player")) {
                 player.inventory.clear()
@@ -547,7 +565,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
                     player.scoreboardTags.contains(knight.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, knightweapon
                         )
                         player.inventory.setItem(
                             1, knight.skill[0]
@@ -565,7 +583,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
                     player.scoreboardTags.contains(spaceoperator.name) -> {
                         player.inventory.setItem(
-                            0, knightweapon
+                            0, wizardweapon
                         )
                         player.inventory.setItem(
                             1, spaceoperator.skill[0]
@@ -620,12 +638,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                         player.scoreboardTags.add("mana_user")
                         player.addPotionEffect(
                             PotionEffect(
-                                PotionEffectType.NIGHT_VISION,
-                                INFINITE_DURATION,
-                                0,
-                                false,
-                                false,
-                                true
+                                PotionEffectType.NIGHT_VISION, INFINITE_DURATION, 0, false, false, true
                             )
                         )
                     }
@@ -702,12 +715,65 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                             8, mathematician.skill[3]
                         )
                     }
+
+                    player.scoreboardTags.contains(physicist.name) -> {
+                        player.inventory.setItem(
+                            0, wizardweapon
+                        )
+                        player.inventory.setItem(
+                            1, physicist.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, physicist.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, physicist.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, physicist.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(paladin.name) -> {
+                        player.inventory.setItem(
+                            0, paladinweapon
+                        )
+                        player.inventory.setItem(
+                            1, paladin.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, paladin.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, paladin.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, paladin.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(bard.name) -> {
+                        player.inventory.setItem(
+                            0, bardweapon
+                        )
+                        player.inventory.setItem(
+                            1, bard.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, bard.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, bard.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, bard.skill[3]
+                        )
+                    }
                 }
 
                 player.removeScoreboardTag("game_player")
             }
         }
-        CLASSWAR.instance.server.pluginManager.callEvent(GameStartEvent())
 
         CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
             onlinePlayers.forEach {
@@ -715,6 +781,8 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             }
             gameEnd()
         }, 3600L)
+        CLASSWAR.instance.server.pluginManager.callEvent(GameStartEvent())
+        return
     }
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
@@ -722,7 +790,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             when (args[0].lowercase(Locale.getDefault())) {
                 "start" -> {
                     if (sender is Player && sender.isOp) {
-                        if (!isGaming) {
+                        if (!isStarting) {
                             gamePick(sender)
                         } else {
                             sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 이미 게임이 진행중입니다.")
@@ -735,7 +803,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
                 "stop" -> {
                     if (sender.isOp) {
-                        if (isGaming) {
+                        if (isStarting) {
                             Bukkit.broadcastMessage("${ChatColor.YELLOW}${ChatColor.BOLD}[!] ${sender.name}님이 게임을 종료했습니다.")
                             gameEnd()
                         } else {
@@ -748,7 +816,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 }
 
                 "training" -> {
-                    if (isGaming) {
+                    if (isStarting) {
                         sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 게임 진행중에 이용할 수 없습니다.")
                     } else {
                         sender.sendMessage("${ChatColor.YELLOW}${ChatColor.BOLD}[!] 훈련 종료시 /cw exit 명령어를 사용해주세요")
@@ -762,7 +830,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 }
 
                 "exit" -> {
-                    if (isGaming) {
+                    if (isStarting) {
                         sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 게임 진행중에 이용할 수 없습니다.")
                     } else {
                         if (sender is Player) {
@@ -829,7 +897,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         if (player?.scoreboardTags?.contains("Open_Menu") == true) {
             if (clickedItem != null) {
                 when (val displayName = clickedItem.itemMeta?.displayName) {
-                    berserker.name, archer.name, firewizard.name, waterwizard.name, timemanipulator.name, landwizard.name, windwizard.name, gravitationalmanipulator.name, gambler.name, knight.name, spaceoperator.name, lightningwizard.name, lightwizard.name, darkwizard.name, priests.name, warlock.name, mathematician.name -> {
+                    berserker.name, archer.name, firewizard.name, waterwizard.name, timemanipulator.name, landwizard.name, windwizard.name, gravitationalmanipulator.name, gambler.name, knight.name, spaceoperator.name, lightningwizard.name, lightwizard.name, darkwizard.name, priests.name, warlock.name, mathematician.name, physicist.name -> {
                         if (player.scoreboardTags.contains("training")) {
                             player.sendMessage("선택한 클래스는 ${ChatColor.BOLD}$displayName${ChatColor.RESET}입니다.")
                             player.removeScoreboardTag("Open_Menu")
@@ -1009,7 +1077,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
                                 player.scoreboardTags.contains(knight.name) -> {
                                     player.inventory.setItem(
-                                        0, wizardweapon
+                                        0, knightweapon
                                     )
                                     player.inventory.setItem(
                                         1, knight.skill[0]
@@ -1027,7 +1095,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
                                 player.scoreboardTags.contains(spaceoperator.name) -> {
                                     player.inventory.setItem(
-                                        0, knightweapon
+                                        0, wizardweapon
                                     )
                                     player.inventory.setItem(
                                         1, spaceoperator.skill[0]
@@ -1082,12 +1150,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                                     player.scoreboardTags.add("mana_user")
                                     player.addPotionEffect(
                                         PotionEffect(
-                                            PotionEffectType.NIGHT_VISION,
-                                            INFINITE_DURATION,
-                                            0,
-                                            false,
-                                            false,
-                                            true
+                                            PotionEffectType.NIGHT_VISION, INFINITE_DURATION, 0, false, false, true
                                         )
                                     )
                                 }
@@ -1162,6 +1225,60 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                                     )
                                     player.inventory.setItem(
                                         8, mathematician.skill[3]
+                                    )
+                                }
+
+                                player.scoreboardTags.contains(physicist.name) -> {
+                                    player.inventory.setItem(
+                                        0, wizardweapon
+                                    )
+                                    player.inventory.setItem(
+                                        1, physicist.skill[0]
+                                    )
+                                    player.inventory.setItem(
+                                        2, physicist.skill[1]
+                                    )
+                                    player.inventory.setItem(
+                                        3, physicist.skill[2]
+                                    )
+                                    player.inventory.setItem(
+                                        8, physicist.skill[3]
+                                    )
+                                }
+
+                                player.scoreboardTags.contains(paladin.name) -> {
+                                    player.inventory.setItem(
+                                        0, paladinweapon
+                                    )
+                                    player.inventory.setItem(
+                                        1, paladin.skill[0]
+                                    )
+                                    player.inventory.setItem(
+                                        2, paladin.skill[1]
+                                    )
+                                    player.inventory.setItem(
+                                        3, paladin.skill[2]
+                                    )
+                                    player.inventory.setItem(
+                                        8, paladin.skill[3]
+                                    )
+                                }
+
+                                player.scoreboardTags.contains(bard.name) -> {
+                                    player.inventory.setItem(
+                                        0, bardweapon
+                                    )
+                                    player.inventory.setItem(
+                                        1, bard.skill[0]
+                                    )
+                                    player.inventory.setItem(
+                                        2, bard.skill[1]
+                                    )
+                                    player.inventory.setItem(
+                                        3, bard.skill[2]
+                                    )
+                                    player.inventory.setItem(
+                                        8, bard.skill[3]
                                     )
                                 }
                             }
@@ -1281,7 +1398,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         val damagedEntity = event.entity
         val damagerEntity = event.damager
 
-        if (isGaming) {
+        if (isStarting) {
             if (damagerEntity is Player && damagedEntity is Player) {
                 if (!damagedEntity.isBattlefield()) {
                     event.isCancelled = true
@@ -1292,7 +1409,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
     @EventHandler
     fun onPlayerDropItem(event: PlayerDropItemEvent) {
-        if (isGaming) {
+        if (isStarting) {
             event.isCancelled = true
         } else if (event.player.scoreboardTags.contains("training")) {
             event.isCancelled = true
@@ -1472,7 +1589,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                     for (i in 0 until barrel.inventory.size) {
                         barrel.inventory.setItem(i, nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
+                    barrel.inventory.setItem(9, knightweapon)
                     barrel.inventory.setItem(10, knight.skill[0])
                     barrel.inventory.setItem(11, knight.skill[1])
                     barrel.inventory.setItem(12, knight.skill[2])
@@ -1483,7 +1600,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                     for (i in 0 until barrel.inventory.size) {
                         barrel.inventory.setItem(i, nullpane)
                     }
-                    barrel.inventory.setItem(9, knightweapon)
+                    barrel.inventory.setItem(9, wizardweapon)
                     barrel.inventory.setItem(10, spaceoperator.skill[0])
                     barrel.inventory.setItem(11, spaceoperator.skill[1])
                     barrel.inventory.setItem(12, spaceoperator.skill[2])
@@ -1555,7 +1672,47 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                     barrel.inventory.setItem(12, mathematician.skill[2])
                     barrel.inventory.setItem(17, mathematician.skill[3])
                 }
+
+                "${ChatColor.BOLD}물리학자" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, nullpane)
+                    }
+                    barrel.inventory.setItem(9, wizardweapon)
+                    barrel.inventory.setItem(10, physicist.skill[0])
+                    barrel.inventory.setItem(11, physicist.skill[1])
+                    barrel.inventory.setItem(12, physicist.skill[2])
+                    barrel.inventory.setItem(17, physicist.skill[3])
+                }
+
+                "${ChatColor.BOLD}팔라딘" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, nullpane)
+                    }
+                    barrel.inventory.setItem(9, paladinweapon)
+                    barrel.inventory.setItem(10, paladin.skill[0])
+                    barrel.inventory.setItem(11, paladin.skill[1])
+                    barrel.inventory.setItem(12, paladin.skill[2])
+                    barrel.inventory.setItem(17, paladin.skill[3])
+                }
+
+                "${ChatColor.BOLD}바드" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, nullpane)
+                    }
+                    barrel.inventory.setItem(9, bardweapon)
+                    barrel.inventory.setItem(10, bard.skill[0])
+                    barrel.inventory.setItem(11, bard.skill[1])
+                    barrel.inventory.setItem(12, bard.skill[2])
+                    barrel.inventory.setItem(17, bard.skill[3])
+                }
             }
+        }
+    }
+
+    @EventHandler
+    fun onSwapHands(event: PlayerSwapHandItemsEvent) {
+        if (isStarting) {
+            event.isCancelled = true
         }
     }
 
@@ -1564,7 +1721,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         val whoClicked = event.whoClicked
 
         if (whoClicked is Player) {
-            if (isGaming) {
+            if (isStarting) {
                 event.isCancelled = true
             } else if (whoClicked.scoreboardTags.contains("training")) {
                 event.isCancelled = true

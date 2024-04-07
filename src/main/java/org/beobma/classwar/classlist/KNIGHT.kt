@@ -161,6 +161,7 @@ class KNIGHT : Listener {
                 } else if (damagedEntity.scoreboardTags.contains("Parrying_fail")) {
                     event.damage *= 2
                     damagedEntity.sendMessage("${event.damager.name}이(가) 시전한 공격을 흘려내는데 실패하여 2배의 피해를 입었습니다.")
+                    damagedEntity.scoreboardTags.remove("Parrying_fail")
                 }
             }
         }

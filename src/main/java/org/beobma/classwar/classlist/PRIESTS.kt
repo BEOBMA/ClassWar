@@ -3,7 +3,6 @@
 package org.beobma.classwar.classlist
 
 import org.beobma.classwar.CLASSWAR
-import org.beobma.classwar.GameManager.Companion.gamingPlayer
 import org.beobma.classwar.LOCALIZATION.Companion.priests
 import org.beobma.classwar.event.GameStartEvent
 import org.beobma.classwar.event.SkillUsingEvent
@@ -98,7 +97,11 @@ class PRIESTS : Listener {
                 }
 
                 priests.skill[2] -> { // 궁극 스킬
-                    val shootResort = Skill.shootLaserFromPlayer(player, 1.0, false)
+                    var shootResort = Skill.shootLaserFromPlayer(player, 1.0, false)
+
+                    if (shootResort == null) {
+                        shootResort = player
+                    }
 
                     if (shootResort is Player) {
                         if (player.isTeam("RedTeam")) {
@@ -134,7 +137,7 @@ class PRIESTS : Listener {
 
     @EventHandler
     fun onGameStart(event: GameStartEvent) {
-        gamingPlayer?.forEach {
+        Bukkit.getServer().onlinePlayers.forEach {
             if (it.scoreboardTags.contains(priests.name)) {
                 if (it.isTeam("RedTeam")) {
                     for (targetPlayer in Bukkit.getServer().onlinePlayers) {

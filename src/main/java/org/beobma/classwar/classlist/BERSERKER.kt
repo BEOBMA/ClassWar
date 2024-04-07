@@ -66,7 +66,9 @@ class BERSERKER : Listener {
             }
         }
     }
-    private var plusdamage: Double = 0.0
+    companion object {
+        private var plusdamage: Double = 0.0
+    }
 
     @EventHandler
     fun onPlayerDamage(event: EntityDamageByEntityEvent) {

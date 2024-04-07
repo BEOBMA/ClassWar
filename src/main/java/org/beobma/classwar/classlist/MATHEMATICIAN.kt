@@ -27,9 +27,11 @@ import org.bukkit.scheduler.BukkitTask
 
 class MATHEMATICIAN : Listener {
 
-    var marker: MutableList<Location> = mutableListOf()
-    var cuboid: MutableList<MutableList<Location>> = mutableListOf()
-    private var task: BukkitTask? = null
+    companion object {
+        var marker: MutableList<Location> = mutableListOf()
+        var cuboid: MutableList<MutableList<Location>> = mutableListOf()
+        private var task: BukkitTask? = null
+    }
 
     @EventHandler
     fun onGameStart(event: GameStartEvent) {
@@ -144,7 +146,10 @@ class MATHEMATICIAN : Listener {
                         }
                     }
 
-                    val damage = calculateVolumeBetweenLocations(marker.first(), marker.last()) / 5
+                    var damage = calculateVolumeBetweenLocations(marker.first(), marker.last()) / 5
+                    if (damage >= 25) {
+                        damage = 25
+                    }
                     getPlayersInsideRectangle(marker.first(), marker.last(), player.location.world).forEach {
                         if (player.isTeam("RedTeam")) {
                             if (it.isSkillTarget() && it.isTeam("BlueTeam")) {
@@ -254,7 +259,11 @@ class MATHEMATICIAN : Listener {
                         return
                     }
 
-                    val damage = cuboid.size * 3
+                    var damage = cuboid.size * 3
+
+                    if (damage >= 30) {
+                        damage = 30
+                    }
 
                     cuboid.forEach {
                         getPlayersInsideRectangle(it.first(), it.last(), player.location.world).forEach { it1 ->
