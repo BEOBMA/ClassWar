@@ -114,16 +114,14 @@ class LIGHTWIZARD : Listener {
                                 if (shootResort != null && shootResort is Player) {
                                     if (player.isTeam("RedTeam")) {
                                         if (shootResort.isTeam("BlueTeam")) {
-                                            if (shootResort.isBrilliance()) {
+                                            if (shootResort.isSkillTarget()) {
                                                 shootResort.addBrilliance(5)
                                                 shootResort.damageHealth(2, lightwizard.getSkillName(1), player)
-                                            } else {
-                                                shootResort.addBrilliance(5)
                                             }
                                         }
                                     } else if (player.isTeam("BlueTeam")) {
                                         if (shootResort.isTeam("RedTeam")) {
-                                            if (shootResort.isBrilliance()) {
+                                            if (shootResort.isSkillTarget()) {
                                                 shootResort.addBrilliance(5)
                                                 shootResort.damageHealth(2, lightwizard.getSkillName(1), player)
                                             }

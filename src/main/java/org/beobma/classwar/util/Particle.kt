@@ -171,5 +171,22 @@ class Particle : Listener {
                 }
             }
         }
+
+        /**
+         * 플레이어가 바라보는 방향을 기준으로 직선 N칸 만큼의 파티클 생성
+         * @param player 플레이어 객체
+         * @param distance 거리
+         * @param particle 재생할 파티클 종류.
+         */
+        fun spawnStraightParticles(player: Player, particle: Particle, distance: Int) {
+            val world = player.world
+            val startLocation = player.eyeLocation
+            val direction = startLocation.direction
+
+            for (i in 1..distance) {
+                val location = startLocation.clone().add(direction.multiply(i.toDouble()))
+                world.spawnParticle(particle, location, 1, 0.0, 0.0, 0.0, 0.0)
+            }
+        }
     }
 }

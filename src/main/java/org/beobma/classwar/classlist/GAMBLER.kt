@@ -29,7 +29,7 @@ class GAMBLER : Listener {
                     player.location.world.playSound(player.location, Sound.ITEM_BOOK_PAGE_TURN, 10.0f, 2.0f)
 
 
-                    player.coolTime(2, 1, gambler.skill[0])
+                    player.coolTime(5, 1, gambler.skill[0])
                 }
 
                 gambler.skill[1] -> { // 보조 스킬

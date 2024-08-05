@@ -24,76 +24,51 @@ import org.bukkit.inventory.ItemStack
 
 class ARCHER : Listener {
 
-    @EventHandler
-    fun onPlayerSkillUsing(event: SkillUsingEvent) {
-        val player = event.player
-        val job = event.job
-        val skill = event.skill
-
-        if (job == archer.name) {
-            when (skill) {
-                archer.skill[0] -> { // 일반 스킬
-                    if (getArrowCount(player) < 1) {
-                        player.sendArrowInsufficient()
-                    } else {
-                        spawnProjectile(
-                            player, archer.skill[0], 1.0, 0.5, 0.5, 0.5, physics = true, crash = true, remove = true
-                        )
-
-                        player.location.world.playSound(player.location, Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.3f)
-
-                        player.coolTime(10, 1, archer.skill[0])
-                        val arrow = ItemStack(Material.ARROW, 1).apply {
-                            itemMeta = itemMeta.apply {
-                                setDisplayName(archer.getItemName(0))
-                                lore = archer.getItemLore(0)
-                            }
-                        }
-                        player.inventory.removeItem(arrow)
-                    }
-                }
-                archer.skill[1] -> { // 궁극 스킬
-                    if (getArrowCount(player) < 3) {
-                        player.sendArrowInsufficient()
-                    } else {
-                        spawnProjectile(
-                            player, archer.skill[1], 1.0, 0.75, 0.75, 0.75, physics = true, crash = true, remove = true
-                        )
-
-                        player.location.world.playSound(player.location, Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.6f)
-
-                        val arrow = ItemStack(Material.ARROW, 3).apply {
-                            itemMeta = itemMeta.apply {
-                                setDisplayName(archer.getItemName(0))
-                                lore = archer.getItemLore(0)
-                            }
-                        }
-                        player.inventory.removeItem(arrow)
-                        player.inventory.setItem(2, null)
-                    }
-
-                }
-            }
-        }
-    }
-
-
     companion object {
         private var isUsed: Boolean = false
     }
 
     @EventHandler
-    fun onPlayerDamage(event: EntityDamageByEntityEvent) {
-        val damagedEntity = event.entity
+    fun onPlayerSkillUsing(event: SkillUsingEvent) {
+        val player = event.player
+        if (event.job == archer.name) {
+            when (event.skill) {
+                archer.skill[0] -> handleNormalSkill(player)
+                archer.skill[1] -> handleUltimateSkill(player)
+            }
+        }
+    }
 
-        if (GameManager.isStarting) {
-            if (!isUsed) {
-                if (damagedEntity.scoreboardTags.contains(archer.name) && damagedEntity is Player) {
-                    if (damagedEntity.health - event.damage <= 20) {
-                        isUsed = true
-                        event.isCancelled = true
-                        damagedEntity.invisibilityState(4)
-                    }
+    private fun handleNormalSkill(player: Player) {
+        if (getArrowCount(player) < 1) {
+            player.sendArrowInsufficient()
+        } else {
+            spawnProjectile(player, archer.skill[0], 1.0, 0.5, 0.5, 0.5, true, crash = true, remove = true)
+            player.location.world.playSound(player.location, Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.3f)
+            player.coolTime(10, 1, archer.skill[0])
+            removeArrows(player, 1, archer.getItemName(0), archer.getItemLore(0))
+        }
+    }
+
+    private fun handleUltimateSkill(player: Player) {
+        if (getArrowCount(player) < 3) {
+            player.sendArrowInsufficient()
+        } else {
+            spawnProjectile(player, archer.skill[1], 1.0, 0.75, 0.75, 0.75, physics = true, crash = true, remove = true)
+            player.location.world.playSound(player.location, Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.6f)
+            removeArrows(player, 3, archer.getItemName(1), archer.getItemLore(1))
+        }
+    }
+
+    @EventHandler
+    fun onPlayerDamage(event: EntityDamageByEntityEvent) {
+        if (GameManager.isStarting && !isUsed) {
+            val damagedEntity = event.entity
+            if (damagedEntity is Player && damagedEntity.scoreboardTags.contains(archer.name)) {
+                if (damagedEntity.health - event.damage <= 20) {
+                    isUsed = true
+                    event.isCancelled = true
+                    damagedEntity.invisibilityState(4)
                 }
             }
         }
@@ -102,56 +77,30 @@ class ARCHER : Listener {
     @EventHandler
     fun onMarkerHit(event: MarkerHitEvent) {
         val entity = event.crashEntity
-        if (event.skill == archer.skill[0]) {
-            if (entity != null) {
-                entity.damageHealth(10, archer.getSkillName(0), event.player)
-                entity.location.world.playSound(
-                    entity.location,
-                    Sound.ENTITY_ARROW_HIT_PLAYER,
-                    0.2f,
-                    1f
-                )
-            }
-        }
-        if (event.skill == archer.skill[1]) {
-            if (entity != null) {
-                entity.damageHealth(20, archer.getSkillName(1), event.player)
-                entity.location.world.playSound(
-                    entity.location,
-                    Sound.ENTITY_ARROW_HIT_PLAYER,
-                    0.2f,
-                    1.3f
-                )
-            }
+        val skillIndex = if (event.skill == archer.skill[0]) 0 else 1
+        val damage = if (skillIndex == 0) 10 else 20
+        val pitch = if (skillIndex == 0) 1f else 1.3f
+
+        entity?.let {
+            it.damageHealth(damage, archer.getSkillName(skillIndex), event.player)
+            it.location.world.playSound(it.location, Sound.ENTITY_ARROW_HIT_PLAYER, 0.2f, pitch)
         }
     }
 
     @EventHandler
     fun onMoveMarker(event: MarkerMoveEvent) {
         val location = event.location
-        if (event.skill == archer.skill[0]) {
-            location.world.spawnParticle(
-                Particle.END_ROD,
-                location,
-                1,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            )
-        }
+        val particleCount = if (event.skill == archer.skill[0]) 0.0 else 0.1
 
-        if (event.skill == archer.skill[1]) {
-            location.world.spawnParticle(
-                Particle.END_ROD,
-                location,
-                1,
-                0.1,
-                0.1,
-                0.0,
-                0.0
-            )
-        }
+        location.world.spawnParticle(
+            Particle.END_ROD,
+            location,
+            1,
+            particleCount,
+            particleCount,
+            0.0,
+            0.0
+        )
     }
 
     @EventHandler
@@ -160,15 +109,16 @@ class ARCHER : Listener {
     }
 
     private fun getArrowCount(player: Player): Int {
-        val inventory = player.inventory
-        var arrowCount = 0
+        return player.inventory.contents.filter { it != null && it.type == Material.ARROW }.sumOf { it!!.amount }
+    }
 
-        for (item in inventory.contents) {
-            if (item != null && item.type == Material.ARROW) {
-                arrowCount += item.amount
+    private fun removeArrows(player: Player, count: Int, name: String, lore: List<String>?) {
+        val arrow = ItemStack(Material.ARROW, count).apply {
+            itemMeta = itemMeta?.apply {
+                setDisplayName(name)
+                this.lore = lore
             }
         }
-
-        return arrowCount
+        player.inventory.removeItem(arrow)
     }
 }

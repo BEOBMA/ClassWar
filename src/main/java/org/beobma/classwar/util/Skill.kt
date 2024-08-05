@@ -6,15 +6,19 @@ import net.md_5.bungee.api.ChatColor
 import org.beobma.classwar.CLASSWAR
 import org.beobma.classwar.Class
 import org.beobma.classwar.GameManager
+import org.beobma.classwar.GameManager.Companion.isGaming
 import org.beobma.classwar.GameManager.Companion.isStarting
 import org.beobma.classwar.GameManager.Companion.onlinePlayers
 import org.beobma.classwar.LOCALIZATION.Companion.gambler
 import org.beobma.classwar.LOCALIZATION.Companion.warlock
+import org.beobma.classwar.event.DamageEvent
 import org.beobma.classwar.event.MarkerHitEvent
 import org.beobma.classwar.event.MarkerMoveEvent
 import org.beobma.classwar.event.Type
-import org.bukkit.*
-import org.bukkit.Particle
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Sound
+import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -24,6 +28,8 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffect.INFINITE_DURATION
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
+import java.util.*
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -36,9 +42,21 @@ class Skill : Listener {
          * 일정 시간동안 특정 플레이어의 공격 속도를 증가시킵니다.
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 증가시 효과의 위력을 나타냅니다 (단위 20%의 배수)*/
-        fun Player.attackSpeed(duration: Int, amplifier: Int) {
+        fun Player.attackSpeed(duration: Int, amplifier: Int, plus: Boolean = false) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 10) - 1
+            if (plus) {
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.DAMAGE_RESISTANCE,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
+            }
             if (player!!.hasPotionEffect(PotionEffectType.FAST_DIGGING)) {
                 val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.FAST_DIGGING)?.amplifier
                 val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.FAST_DIGGING)?.duration
@@ -50,7 +68,16 @@ class Skill : Listener {
                     )
                 )
             } else {
-                player!!.addPotionEffect(PotionEffect(PotionEffectType.FAST_DIGGING, ticks, strength, false, false, true))
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.FAST_DIGGING,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
             }
         }
 
@@ -58,9 +85,21 @@ class Skill : Listener {
          * 일정 시간동안 특정 플레이어의 공격력을 증가시킵니다.
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 증가시 효과의 위력을 나타냅니다 (단위 3의 배수)*/
-        fun Player.attackDamage(duration: Int, amplifier: Int) {
+        fun Player.attackDamage(duration: Int, amplifier: Int, plus: Boolean = false) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 3) - 1
+            if (plus) {
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.DAMAGE_RESISTANCE,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
+            }
             if (player!!.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
                 val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.INCREASE_DAMAGE)?.amplifier
                 val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.INCREASE_DAMAGE)?.duration
@@ -72,7 +111,16 @@ class Skill : Listener {
                     )
                 )
             } else {
-                player!!.addPotionEffect(PotionEffect(PotionEffectType.INCREASE_DAMAGE, ticks, strength, false, false, true))
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.INCREASE_DAMAGE,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
             }
         }
 
@@ -81,9 +129,21 @@ class Skill : Listener {
          * 일정 시간동안 특정 플레이어의 받는 피해를 감소시킵니다.
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 감소시 효과의 위력을 나타냅니다 (단위 20%의 배수)*/
-        fun Player.damageReduction(duration: Int, amplifier: Int) {
+        fun Player.damageReduction(duration: Int, amplifier: Int, plus: Boolean = false) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 20) - 1
+            if (plus) {
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.DAMAGE_RESISTANCE,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
+            }
             if (player!!.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
                 val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)?.amplifier
                 val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)?.duration
@@ -95,17 +155,48 @@ class Skill : Listener {
                     )
                 )
             } else {
-                player!!.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, ticks, strength, false, false, true))
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.DAMAGE_RESISTANCE,
+                        ticks,
+                        strength,
+                        false,
+                        false,
+                        true
+                    )
+                )
             }
+        }
+
+        /**
+         * 일정 시간동안 특정 플레이어의 받는 피해를 증가시킵니다.
+         * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
+         * @param amplifier 증가시킬 배율을 나타냅니다. (단위 퍼센트)*/
+        fun Player.damageIncrease(duration: Int, amplifier: Int) {
+            val ticks = secondsToTicks(duration)
+            player!!.scoreboard.getObjective("DamageMultiplier")?.getScore(player!!.name)!!.score += amplifier
+
+            player!!.addTasks("damageIncrease",
+                object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboard.getObjective("DamageMultiplier")?.getScore(player!!.name)!!.score -= amplifier
+                    }
+                }.runTaskLater(CLASSWAR.instance, ticks.toLong())
+            )
         }
 
         /**
          * 일정 시간동안 특정 플레이어의 이동 속도를 증가시킵니다.
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 증가시 효과의 위력을 나타냅니다 (단위 20%의 배수)*/
-        fun Player.speedIncrease(duration: Int, amplifier: Int) {
+        fun Player.speedIncrease(duration: Int, amplifier: Int, plus: Boolean = false) {
             val ticks = secondsToTicks(duration)
             val strength = (amplifier / 20) - 1
+            if (plus) {
+                player!!.addPotionEffect(PotionEffect(PotionEffectType.SPEED, ticks, strength, false, false, true))
+                return
+            }
+
             if (player!!.hasPotionEffect(PotionEffectType.SPEED)) {
                 val playerPotionAmplifier = player!!.getPotionEffect(PotionEffectType.SPEED)?.amplifier
                 val playerPotionDuration = player!!.getPotionEffect(PotionEffectType.SPEED)?.duration
@@ -125,7 +216,7 @@ class Skill : Listener {
          * 일정 시간동안 특정 플레이어의 점프 높이를 증가시킵니다.
          * @param duration 효과의 지속시간을 나타냅니다. (단위 초)
          * @param amplifier 증가시 효과의 위력을 나타냅니다 (단위 0~255)*/
-        fun Player.jumpBoost(duration: Int, amplifier: Int) {
+        private fun Player.jumpBoost(duration: Int, amplifier: Int) {
             if (duration == INFINITE_DURATION) {
                 player!!.addPotionEffect(
                     PotionEffect(
@@ -176,10 +267,19 @@ class Skill : Listener {
          * @param damage 피해의 위력입니다.
          * @param skillname 피해의 근원 스킬입니다.
          * @param myplayer 피해 스킬을 사용한 근원 대상입니다.
-         * @param invulnerable 피해가 무적 시간을 무시할지 여부*/
-        fun Player.damageHealth(damage: Int, skillname: String, myplayer: Player, invulnerable: Boolean = true) {
+         * @param invulnerable 피해가 무적 시간을 무시할지 여부
+         * @param message 피해가 메시지를 유발시킬지 여부 */
+        fun Player.damageHealth(damage: Int, skillname: String, myplayer: Player, invulnerable: Boolean = true, message: Boolean = true) {
             val currentHealth = player!!.health
             var finalDamage = damage
+
+            val event = DamageEvent(myplayer, player!!, finalDamage.toDouble(), skillname)
+            CLASSWAR.instance.server.pluginManager.callEvent(event)
+            if (event.isCancelled) {
+                return
+            }
+            finalDamage = event.damage.toInt()
+
             if (player!!.isFatalWound()) {
                 finalDamage = (finalDamage + (10 * 0.1)).toInt()
                 GameManager.gamingPlayer?.forEach {
@@ -210,14 +310,20 @@ class Skill : Listener {
                     if (player!!.isInvulnerable) {
                         val health = player!!.health
                         player!!.health = health - finalDamage.toDouble()
-                        player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                        if (message) {
+                            player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                        }
                     } else {
                         player!!.damage(finalDamage.toDouble())
-                        player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                        if (message) {
+                            player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                        }
                     }
                 } else {
                     player!!.damage(finalDamage.toDouble())
-                    player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                    if (message) {
+                        player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${finalDamage}의 피해를 입었습니다.")
+                    }
                 }
             }
         }
@@ -228,13 +334,8 @@ class Skill : Listener {
          * @param skillname 회복의 근원 스킬입니다.
          * @param myplayer 회복 스킬을 사용한 근원 대상입니다.*/
         fun Player.healingHealth(healint: Int, skillname: String, myplayer: Player) {
-            if (player!!.health + healint > 40) {
-                player!!.health = 40.0
-                player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${healint}을 회복했습니다.")
-            } else {
-                player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${healint}을 회복했습니다.")
-                player!!.health += healint
-            }
+            player!!.sendMessage("${myplayer.name}이(가) 시전한 ${skillname}${ChatColor.RESET}에 의해 ${healint}을 회복했습니다.")
+            player!!.health += healint
         }
 
         /**
@@ -245,14 +346,11 @@ class Skill : Listener {
         fun Player.coolTime(time: Int, slot: Int, itemstack: ItemStack) {
             player!!.inventory.setItem(slot, null)
             CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                if (player != null) {
-                    if (isStarting) {
-                        player?.inventory?.setItem(slot, itemstack)
-                    } else if (player!!.scoreboardTags.contains("training")) {
-                        player?.inventory?.setItem(slot, itemstack)
-                    }
-                }
-            }, secondsToTicks(time).toLong())
+                if (player == null) return@Runnable
+                if (!isGaming && !player!!.isTraining()) return@Runnable
+                if (!player!!.isPlayer() && !player!!.isTraining()) return@Runnable
+                player?.inventory?.setItem(slot, itemstack)
+            }, (time * 20).toLong())
         }
 
 
@@ -312,9 +410,13 @@ class Skill : Listener {
         fun Player.addSilence(int: Int) {
             player!!.scoreboardTags.add("silence")
 
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("silence")
-            }, int.toLong() * 20)
+            player!!.addTasks(
+                "silence", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("silence")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (int * 20).toLong())
+            )
         }
 
         /** 플레이어가 침묵 상태인지 여부*/
@@ -332,20 +434,23 @@ class Skill : Listener {
             player!!.addSilence(int)
             val location: Location = player!!.location
 
-            object : BukkitRunnable() {
-                override fun run() {
-                    if (player!!.scoreboardTags.contains("stun")) {
+            player!!.addTasks(
+                "stunEffect", object : BukkitRunnable() {
+                    override fun run() {
+                        if (!player!!.scoreboardTags.contains("stun")) this.cancel()
                         player!!.teleport(location)
                         player!!.sendTitle("${ChatColor.YELLOW}${ChatColor.BOLD}기절", "", 0, int, 0)
-                    } else {
-                        this.cancel()
                     }
-                }
-            }.runTaskTimer(CLASSWAR.instance, 0, 1)
+                }.runTaskTimer(CLASSWAR.instance, 0, 1)
+            )
 
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("stun")
-            }, int.toLong() * 20)
+            player!!.addTasks(
+                "stun", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("stun")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (int * 20).toLong())
+            )
         }
 
         /** 플레이어가 기절 상태인지 여부*/
@@ -362,20 +467,24 @@ class Skill : Listener {
             player!!.scoreboardTags.add("fear")
             player!!.addSilence(int)
             player!!.addAbyss(10)
-            object : BukkitRunnable() {
-                override fun run() {
-                    if (player!!.scoreboardTags.contains("fear")) {
+
+            player!!.addTasks(
+                "fearEffect", object : BukkitRunnable() {
+                    override fun run() {
+                        if (!player!!.scoreboardTags.contains("fear")) this.cancel()
                         player!!.location.world.playSound(player!!.location, Sound.BLOCK_WOOD_STEP, 1.0F, 1.0F)
                         player!!.sendTitle("${ChatColor.BLACK}${ChatColor.BOLD}공포", "", 0, int, 0)
-                    } else {
-                        this.cancel()
                     }
-                }
-            }.runTaskTimer(CLASSWAR.instance, 0, 1)
+                }.runTaskTimer(CLASSWAR.instance, 0, 1)
+            )
 
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("fear")
-            }, int.toLong() * 20)
+            player!!.addTasks(
+                "fear", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("fear")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (int * 20).toLong())
+            )
         }
 
         /** 플레이어가 공포 상태인지 여부*/
@@ -396,12 +505,16 @@ class Skill : Listener {
             player!!.scoreboardTags.add("electric")
             player!!.addSlow(int, 15)
 
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("electric")
-            }, int.toLong() * 20)
+            player!!.addTasks(
+                "electric", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("electric")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (int * 20).toLong())
+            )
         }
 
-        /** 플레이어가 기절 상태인지 여부*/
+        /** 플레이어가 감전 상태인지 여부*/
         fun Player.isElectric(): Boolean {
             return if (player != null) {
                 (player!!.scoreboardTags.contains("electric"))
@@ -410,14 +523,55 @@ class Skill : Listener {
             }
         }
 
+        private val playerTasks: MutableMap<UUID, MutableMap<String, BukkitTask>> = mutableMapOf()
+
+        /** 스케쥴러를 추가함
+         * @param name 스케쥴러 확인자
+         * @param task 스케쥴러 */
+        private fun Player.addTasks(name: String, task: BukkitTask) {
+            val tasks = playerTasks.getOrPut(player!!.uniqueId) { mutableMapOf() }
+            tasks[name]?.cancel()
+            tasks[name] = task
+        }
+
+        /** 스케쥴러를 강제로 제거함
+         * @param name 스케쥴러 확인자 */
+        private fun Player.removeTasks(name: String) {
+            val tasks = playerTasks.getOrPut(player!!.uniqueId) { mutableMapOf() }
+            tasks[name]?.cancel()
+        }
+
+        /** 플레이어에게 효과를 추가함
+         * @param potionEffectType 포션 효과 식별자\
+         * @param duration 추가할 시간
+         * @param ambient 추가할 효과의 위력 */
+        private fun Player.addEffect(potionEffectType:PotionEffectType, duration: Int, ambient: Int) {
+            if (player!!.hasPotionEffect(potionEffectType)) {
+                val playerPotionDuration = player!!.getPotionEffect(potionEffectType)?.duration
+                val playerPotionAmbient = player!!.getPotionEffect(potionEffectType)?.amplifier
+                val reTicks = playerPotionDuration!! + duration
+                val reAmbient = playerPotionAmbient!! + ambient
+                player!!.addPotionEffect(
+                    PotionEffect(
+                        potionEffectType, reTicks, reAmbient, false, false, true
+                    )
+                )
+            } else {
+                player!!.addPotionEffect(PotionEffect(potionEffectType, duration, ambient, false, false, true))
+            }
+        }
+
         /** 광휘을 시간동안 추가함*/
         fun Player.addBrilliance(int: Int) {
             player!!.scoreboardTags.add("brilliance")
-            player!!.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, int * 20, 0, false, false, true))
-
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("brilliance")
-            }, int.toLong() * 20)
+            player!!.addEffect(PotionEffectType.GLOWING, int * 20, 0)
+            player!!.addTasks(
+                "brilliance", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("brilliance")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (time * 20).toLong())
+            )
         }
 
         /** 플레이어가 광휘 상태인지 여부*/
@@ -433,11 +587,14 @@ class Skill : Listener {
         fun Player.addAbyss(int: Int) {
             player!!.scoreboardTags.add("abyss")
             player!!.scoreboardTags.add("one_abyss")
-            player!!.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, int * 20, 0, false, false, true))
-
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.remove("abyss")
-            }, int.toLong() * 20)
+            player!!.addEffect(PotionEffectType.BLINDNESS, int * 20, 0)
+            player!!.addTasks(
+                "abyss", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("abyss")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (time * 20).toLong())
+            )
         }
 
         /** 플레이어가 심연 상태인지 여부*/
@@ -452,9 +609,13 @@ class Skill : Listener {
         /** 치명적 상처을 시간동안 추가함*/
         fun Player.addFatalWound(int: Int) {
             player!!.scoreboardTags.add("fatal_wound")
-            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                player!!.scoreboardTags.add("fatal_wound")
-            }, int.toLong() * 20)
+            player!!.addTasks(
+                "fatal_wound", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("fatal_wound")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (int * 20).toLong())
+            )
         }
 
         /** 플레이어가 치명적 상처 상태인지 여부*/
@@ -554,40 +715,17 @@ class Skill : Listener {
         fun Player.addBleeding(int: Int) {
             player!!.scoreboard.getObjective("Bleeding")!!.getScore(player!!.name).score += int
 
-            var time = 0
-            object : BukkitRunnable() {
-                override fun run() {
-                    if (time >= 60) {
+            player!!.addTasks(
+                "Bleeding", object : BukkitRunnable() {
+                    override fun run() {
                         player!!.scoreboard.getObjective("Bleeding")!!.getScore(player!!.name).score = 0
-                        this.cancel()
                     }
-
-                    if (player!!.isSprinting) {
-                        player!!.damage(player!!.getBleeding().toDouble())
-                        player!!.location.world.playSound(
-                            player!!.location, Sound.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, 1.0f, 1.0f
-                        )
-                        player!!.location.world.spawnParticle(
-                            Particle.BLOCK_CRACK,
-                            location,
-                            10,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            Material.REDSTONE_BLOCK.createBlockData()
-                        )
-                    }
-
-
-
-                    time++
-                }
-            }.runTaskTimer(CLASSWAR.instance, 0L, 1L)
+                }.runTaskLater(CLASSWAR.instance, 60L)
+            )
         }
 
         /** 출혈 수치를 반환함*/
-        private fun Player.getBleeding(): Int {
+        fun Player.getBleeding(): Int {
             return player!!.scoreboard.getObjective("Bleeding")?.getScore(player!!.name)?.score ?: 0
         }
 
@@ -765,8 +903,7 @@ class Skill : Listener {
         /** 플레이어가 전장에 있는지 여부*/
         fun Player.isBattlefield(): Boolean {
             if (player != null) {
-                return (player!!.location.x >= -6.0 && player!!.location.x <= 30.0 && player!!.location.y >= -64.0 && player!!.location.y <= 100.0 && player!!.location.z >= -60.0 && player!!.location.z <= -24.0 || player!!.location.x in 31.0..63.0 && player!!.location.y >= -64.0 && player!!.location.y <= 100.0 && player!!.location.z >= -58.0 && player!!.location.z <= -26.0 ||
-                        player!!.location.x in 66.0..72.0 && player!!.location.y >= -52.0 && player!!.location.y <= -46.0 && player!!.location.z >= -101.0 && player!!.location.z <= -95.0)
+                return (player!!.location.x >= -6.0 && player!!.location.x <= 30.0 && player!!.location.y >= -64.0 && player!!.location.y <= 100.0 && player!!.location.z >= -60.0 && player!!.location.z <= -24.0 || player!!.location.x in 31.0..63.0 && player!!.location.y >= -64.0 && player!!.location.y <= 100.0 && player!!.location.z >= -58.0 && player!!.location.z <= -26.0 || player!!.location.x in 66.0..72.0 && player!!.location.y >= -52.0 && player!!.location.y <= -46.0 && player!!.location.z >= -101.0 && player!!.location.z <= -95.0)
             }
             return false
         }
@@ -792,29 +929,28 @@ class Skill : Listener {
         /** N초간 대상 지정 불가 상태를 추가함*/
         fun Player.addUntargetability(time: Int) {
             player!!.scoreboardTags.add("untargetability")
-            object : BukkitRunnable() {
-                override fun run() {
-                    player!!.scoreboardTags.remove("untargetability")
-                }
-            }.runTaskLater(CLASSWAR.instance, (time * 20).toLong())
+
+            player!!.addTasks(
+                "untargetability", object : BukkitRunnable() {
+                    override fun run() {
+                        player!!.scoreboardTags.remove("untargetability")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (time * 20).toLong())
+            )
         }
 
         /** 플레이어가 대상 지정 불가 상태인지 여부*/
-        fun Player.isUntargetability(): Boolean {
+        private fun Player.isUntargetability(): Boolean {
             return player?.scoreboardTags?.contains("untargetability") == true
         }
 
         /** 플레이어가 스킬의 대상이 될 수 있는지 여부*/
         fun Player.isSkillTarget(): Boolean {
-            if (player != null) {
-                if (player!!.isPlayer() || player!!.isTraining()) {
-                    if (!player!!.isUntargetability()) {
-                        return true
-                    }
-                }
-                return false
-            }
-            return false
+            if (player == null) return false
+            if (!player!!.isPlayer() && !player!!.isTraining()) return false
+            if (player!!.isUntargetability()) return false
+
+            return true
         }
 
         fun spawnProjectile(
@@ -849,7 +985,7 @@ class Skill : Listener {
             object : BukkitRunnable() {
                 override fun run() {
                     if (physics) {
-                        if (!currentLocation.block.type.isAir) {
+                        if (currentLocation.block.type.isSolid) {
                             val hitEvent = MarkerHitEvent(
                                 player, skill, Type.BLOCK, currentLocation.block.location, null, currentLocation
                             )
@@ -921,7 +1057,9 @@ class Skill : Listener {
 
             if (wallShot) {
                 if (blockRayTraceResult?.hitBlock != null) {
-                    return null
+                    if (blockRayTraceResult.hitBlock!!.isSolid) {
+                        return null
+                    }
                 }
             }
 
@@ -1034,6 +1172,35 @@ class Skill : Listener {
             val overlapZ = minZ1 < maxZ2 && maxZ1 > minZ2
 
             return overlapX && overlapY && overlapZ
+        }
+
+        /**
+         * 해당 플레이어를 추방합니다.
+         *
+         * @param n 추방할 시간 (단위 초)
+         */
+        fun Player.exile(n: Int) {
+            val playerResetLocation = player?.location
+
+            player?.teleport(Location(player?.world, 71.5, -51.0, -95.5, 135F, 0F))
+
+            if (player?.scoreboardTags?.contains("exile") == true) {
+                return
+            }
+
+            player?.scoreboardTags?.add("exile")
+            player?.sendMessage("${ChatColor.YELLOW}${ChatColor.BOLD}[!] ${n}초 후 원래 위치로 이동합니다.")
+
+
+
+            player!!.addTasks(
+                "exile", object : BukkitRunnable() {
+                    override fun run() {
+                        player?.teleport(playerResetLocation!!)
+                        player?.scoreboardTags?.remove("exile")
+                    }
+                }.runTaskLater(CLASSWAR.instance, (n * 20).toLong())
+            )
         }
     }
 }

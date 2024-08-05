@@ -10,6 +10,7 @@ import org.beobma.classwar.util.Particle
 import org.beobma.classwar.util.Skill
 import org.beobma.classwar.util.Skill.Companion.isBattlefield
 import org.beobma.classwar.util.Skill.Companion.isTeam
+import org.beobma.classwar.util.SkillEventList
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
@@ -34,6 +35,7 @@ class CLASSWAR : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(Skill(), this)
         server.pluginManager.registerEvents(Particle(), this)
         server.pluginManager.registerEvents(SkillUse(), this)
+        server.pluginManager.registerEvents(SkillEventList(), this)
 
         server.pluginManager.registerEvents(BERSERKER(), this)
         server.pluginManager.registerEvents(ARCHER(), this)
@@ -54,6 +56,11 @@ class CLASSWAR : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(MATHEMATICIAN(), this)
         server.pluginManager.registerEvents(PHYSICIST(), this)
         server.pluginManager.registerEvents(PALADIN(), this)
+        server.pluginManager.registerEvents(BARD(), this)
+        server.pluginManager.registerEvents(JUDGE(), this)
+        server.pluginManager.registerEvents(DUELIST(), this)
+        server.pluginManager.registerEvents(ASTRONOMER(), this)
+        server.pluginManager.registerEvents(ASSASSIN(), this)
 
         instance = this
         logger.info("클래스 대전 시스템 활성화")

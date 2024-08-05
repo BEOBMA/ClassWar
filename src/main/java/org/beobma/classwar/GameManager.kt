@@ -2,44 +2,13 @@
 
 package org.beobma.classwar
 
-import org.beobma.classwar.LOCALIZATION.Companion.archer
-import org.beobma.classwar.LOCALIZATION.Companion.bard
-import org.beobma.classwar.LOCALIZATION.Companion.bardweapon
-import org.beobma.classwar.LOCALIZATION.Companion.berserker
-import org.beobma.classwar.LOCALIZATION.Companion.darkwizard
-import org.beobma.classwar.LOCALIZATION.Companion.firewizard
-import org.beobma.classwar.LOCALIZATION.Companion.gambler
-import org.beobma.classwar.LOCALIZATION.Companion.gravitationalmanipulator
-import org.beobma.classwar.LOCALIZATION.Companion.knight
-import org.beobma.classwar.LOCALIZATION.Companion.knightweapon
-import org.beobma.classwar.LOCALIZATION.Companion.landwizard
-import org.beobma.classwar.LOCALIZATION.Companion.lightningwizard
-import org.beobma.classwar.LOCALIZATION.Companion.lightwizard
-import org.beobma.classwar.LOCALIZATION.Companion.map_list
-import org.beobma.classwar.LOCALIZATION.Companion.mathematician
-import org.beobma.classwar.LOCALIZATION.Companion.nullpane
-import org.beobma.classwar.LOCALIZATION.Companion.paladin
-import org.beobma.classwar.LOCALIZATION.Companion.paladinweapon
-import org.beobma.classwar.LOCALIZATION.Companion.physicist
-import org.beobma.classwar.LOCALIZATION.Companion.priests
-import org.beobma.classwar.LOCALIZATION.Companion.priestsweapon
-import org.beobma.classwar.LOCALIZATION.Companion.spaceoperator
-import org.beobma.classwar.LOCALIZATION.Companion.timemanipulator
-import org.beobma.classwar.LOCALIZATION.Companion.warlock
-import org.beobma.classwar.LOCALIZATION.Companion.warlockweapon
-import org.beobma.classwar.LOCALIZATION.Companion.waterwizard
-import org.beobma.classwar.LOCALIZATION.Companion.windwizard
-import org.beobma.classwar.LOCALIZATION.Companion.wizardweapon
 import org.beobma.classwar.event.GameStartEvent
-import org.beobma.classwar.util.Skill.Companion.cardDeckReset
-import org.beobma.classwar.util.Skill.Companion.cardDeckShuffle
+import org.beobma.classwar.util.Skill
 import org.beobma.classwar.util.Skill.Companion.cardDraw
-import org.beobma.classwar.util.Skill.Companion.damageReduction
 import org.beobma.classwar.util.Skill.Companion.isBattlefield
 import org.beobma.classwar.util.Skill.Companion.isTeam
-import org.beobma.classwar.util.Skill.Companion.resetGravity
+import org.beobma.classwar.util.Skill.Companion.isTraining
 import org.beobma.classwar.util.Skill.Companion.speedIncrease
-import org.beobma.classwar.util.Skill.Companion.time
 import org.bukkit.*
 import org.bukkit.block.Barrel
 import org.bukkit.block.Block
@@ -69,13 +38,12 @@ import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.Team
 import java.util.*
 
-
 class GameManager : Listener, CommandExecutor, TabCompleter {
 
     companion object {
         var onlinePlayers: MutableCollection<out Player> = Bukkit.getOnlinePlayers()
         var gamingPlayer: MutableCollection<out Player>? = Bukkit.getOnlinePlayers()
-        var randomMap = map_list.random()
+        var randomMap = LOCALIZATION.map_list.random()
         private var shuffledPlayers = onlinePlayers.shuffled()
         private var currentIndex = 0
         var isStarting = false
@@ -98,58 +66,66 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         }
 
         init {
-            menu.setItem(0, createMenuItem(Material.IRON_AXE, berserker.name, berserker.description))
-            menu.setItem(1, createMenuItem(Material.BOW, archer.name, archer.description))
-            menu.setItem(2, createMenuItem(Material.BLAZE_POWDER, firewizard.name, firewizard.description))
-            menu.setItem(3, createMenuItem(Material.WATER_BUCKET, waterwizard.name, waterwizard.description))
-            menu.setItem(4, createMenuItem(Material.CLOCK, timemanipulator.name, timemanipulator.description))
-            menu.setItem(5, createMenuItem(Material.SANDSTONE, landwizard.name, landwizard.description))
-            menu.setItem(6, createMenuItem(Material.WHITE_BANNER, windwizard.name, windwizard.description))
+            menu.setItem(0, createMenuItem(Material.IRON_AXE, LOCALIZATION.berserker.name, LOCALIZATION.berserker.description))
+            menu.setItem(1, createMenuItem(Material.BOW, LOCALIZATION.archer.name, LOCALIZATION.archer.description))
+            menu.setItem(2, createMenuItem(Material.BLAZE_POWDER, LOCALIZATION.firewizard.name, LOCALIZATION.firewizard.description))
+            menu.setItem(3, createMenuItem(Material.WATER_BUCKET, LOCALIZATION.waterwizard.name, LOCALIZATION.waterwizard.description))
+            menu.setItem(4, createMenuItem(Material.CLOCK, LOCALIZATION.timemanipulator.name, LOCALIZATION.timemanipulator.description))
+            menu.setItem(5, createMenuItem(Material.SANDSTONE, LOCALIZATION.landwizard.name, LOCALIZATION.landwizard.description))
+            menu.setItem(6, createMenuItem(Material.WHITE_BANNER, LOCALIZATION.windwizard.name, LOCALIZATION.windwizard.description))
             menu.setItem(
-                7, createMenuItem(Material.APPLE, gravitationalmanipulator.name, gravitationalmanipulator.description)
+                7, createMenuItem(Material.APPLE, LOCALIZATION.gravitationalmanipulator.name, LOCALIZATION.gravitationalmanipulator.description)
             )
-            menu.setItem(8, createMenuItem(Material.PAPER, gambler.name, gambler.description))
-            menu.setItem(9, createMenuItem(Material.IRON_SWORD, knight.name, knight.description))
-            menu.setItem(10, createMenuItem(Material.TWISTING_VINES, spaceoperator.name, spaceoperator.description))
-            menu.setItem(11, createMenuItem(Material.LIGHTNING_ROD, lightningwizard.name, lightningwizard.description))
-            menu.setItem(12, createMenuItem(Material.LIGHT, lightwizard.name, lightwizard.description))
-            menu.setItem(13, createMenuItem(Material.BLACK_CONCRETE, darkwizard.name, darkwizard.description))
-            menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, priests.name, priests.description))
-            menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, warlock.name, warlock.description))
-            menu.setItem(16, createMenuItem(Material.STONE, mathematician.name, mathematician.description))
-            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, physicist.name, physicist.description))
-            menu.setItem(18, createMenuItem(Material.BELL, paladin.name, paladin.description))
-            menu.setItem(19, createMenuItem(Material.GOAT_HORN, bard.name, bard.description))
+            menu.setItem(8, createMenuItem(Material.PAPER, LOCALIZATION.gambler.name, LOCALIZATION.gambler.description))
+            menu.setItem(9, createMenuItem(Material.IRON_SWORD, LOCALIZATION.knight.name, LOCALIZATION.knight.description))
+            menu.setItem(10, createMenuItem(Material.TWISTING_VINES, LOCALIZATION.spaceoperator.name, LOCALIZATION.spaceoperator.description))
+            menu.setItem(11, createMenuItem(Material.LIGHTNING_ROD, LOCALIZATION.lightningwizard.name, LOCALIZATION.lightningwizard.description))
+            menu.setItem(12, createMenuItem(Material.LIGHT, LOCALIZATION.lightwizard.name, LOCALIZATION.lightwizard.description))
+            menu.setItem(13, createMenuItem(Material.BLACK_CONCRETE, LOCALIZATION.darkwizard.name, LOCALIZATION.darkwizard.description))
+            menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, LOCALIZATION.priests.name, LOCALIZATION.priests.description))
+            menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, LOCALIZATION.warlock.name, LOCALIZATION.warlock.description))
+            menu.setItem(16, createMenuItem(Material.STONE, LOCALIZATION.mathematician.name, LOCALIZATION.mathematician.description))
+            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, LOCALIZATION.physicist.name, LOCALIZATION.physicist.description))
+            menu.setItem(18, createMenuItem(Material.BELL, LOCALIZATION.paladin.name, LOCALIZATION.paladin.description))
+            menu.setItem(19, createMenuItem(Material.GOAT_HORN, LOCALIZATION.bard.name, LOCALIZATION.bard.description))
+            menu.setItem(20, createMenuItem(Material.ELYTRA, LOCALIZATION.judge.name, LOCALIZATION.judge.description))
+            menu.setItem(21, createMenuItem(Material.SPECTRAL_ARROW, LOCALIZATION.duelist.name, LOCALIZATION.duelist.description))
+            menu.setItem(22, createMenuItem(Material.SPYGLASS, LOCALIZATION.astronomer.name, LOCALIZATION.astronomer.description))
+            menu.setItem(23, createMenuItem(Material.IRON_NUGGET, LOCALIZATION.assassin.name, LOCALIZATION.assassin.description))
         }
 
         fun reset() {
             currentIndex = 0
             isStarting = false
             isGaming = false
-            time = 0
+            Skill.time = 0
 
-            menu.setItem(0, createMenuItem(Material.IRON_AXE, berserker.name, berserker.description))
-            menu.setItem(1, createMenuItem(Material.BOW, archer.name, archer.description))
-            menu.setItem(2, createMenuItem(Material.BLAZE_POWDER, firewizard.name, firewizard.description))
-            menu.setItem(3, createMenuItem(Material.WATER_BUCKET, waterwizard.name, waterwizard.description))
-            menu.setItem(4, createMenuItem(Material.CLOCK, timemanipulator.name, timemanipulator.description))
-            menu.setItem(5, createMenuItem(Material.SANDSTONE, landwizard.name, landwizard.description))
-            menu.setItem(6, createMenuItem(Material.WHITE_BANNER, windwizard.name, windwizard.description))
+            menu.setItem(0, createMenuItem(Material.IRON_AXE, LOCALIZATION.berserker.name, LOCALIZATION.berserker.description))
+            menu.setItem(1, createMenuItem(Material.BOW, LOCALIZATION.archer.name, LOCALIZATION.archer.description))
+            menu.setItem(2, createMenuItem(Material.BLAZE_POWDER, LOCALIZATION.firewizard.name, LOCALIZATION.firewizard.description))
+            menu.setItem(3, createMenuItem(Material.WATER_BUCKET, LOCALIZATION.waterwizard.name, LOCALIZATION.waterwizard.description))
+            menu.setItem(4, createMenuItem(Material.CLOCK, LOCALIZATION.timemanipulator.name, LOCALIZATION.timemanipulator.description))
+            menu.setItem(5, createMenuItem(Material.SANDSTONE, LOCALIZATION.landwizard.name, LOCALIZATION.landwizard.description))
+            menu.setItem(6, createMenuItem(Material.WHITE_BANNER, LOCALIZATION.windwizard.name, LOCALIZATION.windwizard.description))
             menu.setItem(
-                7, createMenuItem(Material.APPLE, gravitationalmanipulator.name, gravitationalmanipulator.description)
+                7, createMenuItem(Material.APPLE, LOCALIZATION.gravitationalmanipulator.name, LOCALIZATION.gravitationalmanipulator.description)
             )
-            menu.setItem(8, createMenuItem(Material.PAPER, gambler.name, gambler.description))
-            menu.setItem(9, createMenuItem(Material.IRON_SWORD, knight.name, knight.description))
-            menu.setItem(10, createMenuItem(Material.TWISTING_VINES, spaceoperator.name, spaceoperator.description))
-            menu.setItem(11, createMenuItem(Material.LIGHTNING_ROD, lightningwizard.name, lightningwizard.description))
-            menu.setItem(12, createMenuItem(Material.LIGHT, lightwizard.name, lightwizard.description))
-            menu.setItem(13, createMenuItem(Material.BLACK_CONCRETE, darkwizard.name, darkwizard.description))
-            menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, priests.name, priests.description))
-            menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, warlock.name, warlock.description))
-            menu.setItem(16, createMenuItem(Material.STONE, mathematician.name, mathematician.description))
-            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, physicist.name, physicist.description))
-            menu.setItem(18, createMenuItem(Material.BELL, paladin.name, paladin.description))
-            menu.setItem(19, createMenuItem(Material.GOAT_HORN, bard.name, bard.description))
+            menu.setItem(8, createMenuItem(Material.PAPER, LOCALIZATION.gambler.name, LOCALIZATION.gambler.description))
+            menu.setItem(9, createMenuItem(Material.IRON_SWORD, LOCALIZATION.knight.name, LOCALIZATION.knight.description))
+            menu.setItem(10, createMenuItem(Material.TWISTING_VINES, LOCALIZATION.spaceoperator.name, LOCALIZATION.spaceoperator.description))
+            menu.setItem(11, createMenuItem(Material.LIGHTNING_ROD, LOCALIZATION.lightningwizard.name, LOCALIZATION.lightningwizard.description))
+            menu.setItem(12, createMenuItem(Material.LIGHT, LOCALIZATION.lightwizard.name, LOCALIZATION.lightwizard.description))
+            menu.setItem(13, createMenuItem(Material.BLACK_CONCRETE, LOCALIZATION.darkwizard.name, LOCALIZATION.darkwizard.description))
+            menu.setItem(14, createMenuItem(Material.WOODEN_SHOVEL, LOCALIZATION.priests.name, LOCALIZATION.priests.description))
+            menu.setItem(15, createMenuItem(Material.FERMENTED_SPIDER_EYE, LOCALIZATION.warlock.name, LOCALIZATION.warlock.description))
+            menu.setItem(16, createMenuItem(Material.STONE, LOCALIZATION.mathematician.name, LOCALIZATION.mathematician.description))
+            menu.setItem(17, createMenuItem(Material.WOODEN_SWORD, LOCALIZATION.physicist.name, LOCALIZATION.physicist.description))
+            menu.setItem(18, createMenuItem(Material.BELL, LOCALIZATION.paladin.name, LOCALIZATION.paladin.description))
+            menu.setItem(19, createMenuItem(Material.GOAT_HORN, LOCALIZATION.bard.name, LOCALIZATION.bard.description))
+            menu.setItem(20, createMenuItem(Material.ELYTRA, LOCALIZATION.judge.name, LOCALIZATION.judge.description))
+            menu.setItem(21, createMenuItem(Material.SPECTRAL_ARROW, LOCALIZATION.duelist.name, LOCALIZATION.duelist.description))
+            menu.setItem(22, createMenuItem(Material.SPYGLASS, LOCALIZATION.astronomer.name, LOCALIZATION.astronomer.description))
+            menu.setItem(23, createMenuItem(Material.IRON_NUGGET, LOCALIZATION.assassin.name, LOCALIZATION.assassin.description))
         }
     }
 
@@ -174,14 +150,12 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         }
         Bukkit.broadcastMessage("${ChatColor.GREEN}${ChatColor.BOLD}[!] ${player.name}님이 게임을 시작했습니다.")
 
-
         CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
             if (onlinePlayers.size <= 1) {
                 Bukkit.broadcastMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 참가자가 1명 이하이므로 게임을 시작할 수 없습니다.")
                 gameEnd()
                 return@Runnable
             }
-
 
             Bukkit.broadcastMessage("${ChatColor.YELLOW}- 참가자 목록 -")
             onlinePlayers.forEachIndexed { index, onlinePlayer ->
@@ -250,13 +224,13 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             }
 
             if (teams["RedTeam"]?.players?.isEmpty() == true) {
-            Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
-            gameEnd()
-            return@Runnable
+                Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
+                gameEnd()
+                return@Runnable
             } else if (teams["BlueTeam"]?.players?.isEmpty() == true) {
-            Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
-            gameEnd()
-            return@Runnable
+                Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}상대 팀이 존재하지 않아 게임을 진행할 수 없습니다.")
+                gameEnd()
+                return@Runnable
             }
 
             Bukkit.getServer().broadcastMessage("\n${ChatColor.YELLOW}팀 등록이 완료되었습니다.")
@@ -287,7 +261,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
         var countdown = 25
         CLASSWAR.instance.server.scheduler.runTaskTimer(CLASSWAR.instance, Runnable {
             if (countdown > 0) {
-                randomMap = map_list.random()
+                randomMap = LOCALIZATION.map_list.random()
                 player.location.world.playSound(player.location, Sound.BLOCK_LEVER_CLICK, 1.0F, 2.0F)
                 player.scoreboard.getObjective("map_list")?.getScore(player.name)?.score = randomMap["id"] as? Int ?: 0
                 countdown--
@@ -394,125 +368,125 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 player.sendTitle("${ChatColor.BOLD}${ChatColor.RED}Fight!", "${ChatColor.BOLD}무승부까지 3분", 20, 30, 20)
 
                 when {
-                    player.scoreboardTags.contains(berserker.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.berserker.name) -> {
                         player.inventory.setItem(
-                            0, berserker.weapon
+                            0, LOCALIZATION.berserker.weapon
                         )
                         player.inventory.setItem(
-                            1, berserker.skill[0]
+                            1, LOCALIZATION.berserker.skill[0]
                         )
                         player.inventory.setItem(
-                            2, berserker.skill[1]
+                            2, LOCALIZATION.berserker.skill[1]
                         )
                         player.inventory.setItem(
-                            8, berserker.skill[2]
-                        )
-                    }
-
-                    player.scoreboardTags.contains(archer.name) -> {
-                        player.inventory.setItem(
-                            0, archer.weapon
-                        )
-                        player.inventory.setItem(
-                            1, archer.skill[0]
-                        )
-                        player.inventory.setItem(
-                            2, archer.skill[1]
-                        )
-                        player.inventory.setItem(
-                            3, archer.item[0]
-                        )
-                        player.inventory.setItem(
-                            8, archer.skill[2]
+                            8, LOCALIZATION.berserker.skill[2]
                         )
                     }
 
-                    player.scoreboardTags.contains(firewizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.archer.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.archer.weapon
                         )
                         player.inventory.setItem(
-                            1, firewizard.skill[0]
+                            1, LOCALIZATION.archer.skill[0]
                         )
                         player.inventory.setItem(
-                            2, firewizard.skill[1]
+                            2, LOCALIZATION.archer.skill[1]
                         )
                         player.inventory.setItem(
-                            8, firewizard.skill[2]
+                            3, LOCALIZATION.archer.item[0]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.archer.skill[2]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.firewizard.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.wizardweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.firewizard.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.firewizard.skill[1]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.firewizard.skill[2]
                         )
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(waterwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.waterwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, waterwizard.skill[0]
+                            1, LOCALIZATION.waterwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, waterwizard.skill[1]
+                            2, LOCALIZATION.waterwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            8, waterwizard.skill[2]
+                            8, LOCALIZATION.waterwizard.skill[2]
                         )
                         player.speedIncrease(INFINITE_DURATION, 20)
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(timemanipulator.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.timemanipulator.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, timemanipulator.skill[0]
+                            1, LOCALIZATION.timemanipulator.skill[0]
                         )
                         player.inventory.setItem(
-                            2, timemanipulator.skill[1]
+                            2, LOCALIZATION.timemanipulator.skill[1]
                         )
                         player.inventory.setItem(
-                            3, timemanipulator.skill[2]
+                            3, LOCALIZATION.timemanipulator.skill[2]
                         )
                         player.inventory.setItem(
-                            8, timemanipulator.skill[3]
+                            8, LOCALIZATION.timemanipulator.skill[3]
                         )
                     }
 
-                    player.scoreboardTags.contains(landwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.landwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, landwizard.skill[0]
+                            1, LOCALIZATION.landwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, landwizard.skill[1]
+                            2, LOCALIZATION.landwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            3, landwizard.skill[2]
+                            3, LOCALIZATION.landwizard.skill[2]
                         )
                         player.inventory.setItem(
-                            8, landwizard.skill[3]
+                            8, LOCALIZATION.landwizard.skill[3]
                         )
-                        player.damageReduction(INFINITE_DURATION, 40)
+                        player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, INFINITE_DURATION, 1, false, false, true))
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(windwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.windwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, windwizard.skill[0]
+                            1, LOCALIZATION.windwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, windwizard.skill[1]
+                            2, LOCALIZATION.windwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            3, windwizard.skill[2]
+                            3, LOCALIZATION.windwizard.skill[2]
                         )
                         player.inventory.setItem(
-                            8, windwizard.skill[3]
+                            8, LOCALIZATION.windwizard.skill[3]
                         )
                         player.addPotionEffect(
                             PotionEffect(
@@ -522,118 +496,115 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(gravitationalmanipulator.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.gravitationalmanipulator.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, gravitationalmanipulator.skill[0]
+                            1, LOCALIZATION.gravitationalmanipulator.skill[0]
                         )
                         player.inventory.setItem(
-                            2, gravitationalmanipulator.skill[1]
+                            2, LOCALIZATION.gravitationalmanipulator.skill[1]
                         )
                         player.inventory.setItem(
-                            3, gravitationalmanipulator.skill[2]
+                            3, LOCALIZATION.gravitationalmanipulator.skill[2]
                         )
                         player.inventory.setItem(
-                            8, gravitationalmanipulator.skill[3]
+                            8, LOCALIZATION.gravitationalmanipulator.skill[3]
                         )
                         player.scoreboardTags.add("gravity_user")
-                        resetGravity(player)
+                        Skill.resetGravity(player)
                     }
 
-                    player.scoreboardTags.contains(gambler.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.gambler.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            1, LOCALIZATION.gambler.skill[0]
                         )
                         player.inventory.setItem(
-                            1, gambler.skill[0]
+                            2, LOCALIZATION.gambler.skill[1]
                         )
                         player.inventory.setItem(
-                            2, gambler.skill[1]
+                            3, LOCALIZATION.gambler.skill[2]
                         )
                         player.inventory.setItem(
-                            3, gambler.skill[2]
+                            8, LOCALIZATION.gambler.skill[3]
                         )
-                        player.inventory.setItem(
-                            8, gambler.skill[3]
-                        )
-                        cardDeckReset()
-                        cardDeckShuffle()
+                        Skill.cardDeckReset()
+                        Skill.cardDeckShuffle()
                         player.cardDraw(5)
                     }
 
-                    player.scoreboardTags.contains(knight.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.knight.name) -> {
                         player.inventory.setItem(
-                            0, knightweapon
+                            0, LOCALIZATION.knightweapon
                         )
                         player.inventory.setItem(
-                            1, knight.skill[0]
+                            1, LOCALIZATION.knight.skill[0]
                         )
                         player.inventory.setItem(
-                            2, knight.skill[1]
+                            2, LOCALIZATION.knight.skill[1]
                         )
                         player.inventory.setItem(
-                            3, knight.skill[2]
+                            3, LOCALIZATION.knight.skill[2]
                         )
                         player.inventory.setItem(
-                            8, knight.skill[3]
+                            8, LOCALIZATION.knight.skill[3]
                         )
                     }
 
-                    player.scoreboardTags.contains(spaceoperator.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.spaceoperator.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, spaceoperator.skill[0]
+                            1, LOCALIZATION.spaceoperator.skill[0]
                         )
                         player.inventory.setItem(
-                            2, spaceoperator.skill[1]
+                            2, LOCALIZATION.spaceoperator.skill[1]
                         )
                         player.inventory.setItem(
-                            3, spaceoperator.skill[2]
+                            3, LOCALIZATION.spaceoperator.skill[2]
                         )
                         player.inventory.setItem(
-                            8, spaceoperator.skill[3]
+                            8, LOCALIZATION.spaceoperator.skill[3]
                         )
                         player.scoreboardTags.add("charge_user")
                     }
 
-                    player.scoreboardTags.contains(lightningwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.lightningwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, lightningwizard.skill[0]
+                            1, LOCALIZATION.lightningwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, lightningwizard.skill[1]
+                            2, LOCALIZATION.lightningwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            3, lightningwizard.skill[2]
+                            3, LOCALIZATION.lightningwizard.skill[2]
                         )
                         player.inventory.setItem(
-                            8, lightningwizard.skill[3]
+                            8, LOCALIZATION.lightningwizard.skill[3]
                         )
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(lightwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.lightwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, lightwizard.skill[0]
+                            1, LOCALIZATION.lightwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, lightwizard.skill[1]
+                            2, LOCALIZATION.lightwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            3, lightwizard.skill[2]
+                            3, LOCALIZATION.lightwizard.skill[2]
                         )
                         player.inventory.setItem(
-                            8, lightwizard.skill[3]
+                            8, LOCALIZATION.lightwizard.skill[3]
                         )
                         player.scoreboardTags.add("mana_user")
                         player.addPotionEffect(
@@ -643,130 +614,200 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                         )
                     }
 
-                    player.scoreboardTags.contains(darkwizard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.darkwizard.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, darkwizard.skill[0]
+                            1, LOCALIZATION.darkwizard.skill[0]
                         )
                         player.inventory.setItem(
-                            2, darkwizard.skill[1]
+                            2, LOCALIZATION.darkwizard.skill[1]
                         )
                         player.inventory.setItem(
-                            3, darkwizard.skill[2]
+                            3, LOCALIZATION.darkwizard.skill[2]
                         )
                         player.inventory.setItem(
-                            8, darkwizard.skill[3]
+                            8, LOCALIZATION.darkwizard.skill[3]
                         )
                         player.scoreboardTags.add("mana_user")
                     }
 
-                    player.scoreboardTags.contains(priests.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.priests.name) -> {
                         player.inventory.setItem(
-                            0, priestsweapon
+                            0, LOCALIZATION.priestsweapon
                         )
                         player.inventory.setItem(
-                            1, priests.skill[0]
+                            1, LOCALIZATION.priests.skill[0]
                         )
                         player.inventory.setItem(
-                            2, priests.skill[1]
+                            2, LOCALIZATION.priests.skill[1]
                         )
                         player.inventory.setItem(
-                            3, priests.skill[2]
+                            3, LOCALIZATION.priests.skill[2]
                         )
                         player.inventory.setItem(
-                            8, priests.skill[3]
-                        )
-                    }
-
-                    player.scoreboardTags.contains(warlock.name) -> {
-                        player.inventory.setItem(
-                            0, warlockweapon
-                        )
-                        player.inventory.setItem(
-                            1, warlock.skill[0]
-                        )
-                        player.inventory.setItem(
-                            2, warlock.skill[1]
-                        )
-                        player.inventory.setItem(
-                            3, warlock.skill[2]
-                        )
-                        player.inventory.setItem(
-                            8, warlock.skill[3]
+                            8, LOCALIZATION.priests.skill[3]
                         )
                     }
 
-                    player.scoreboardTags.contains(mathematician.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.warlock.name) -> {
                         player.inventory.setItem(
-                            0, wizardweapon
+                            0, LOCALIZATION.warlockweapon
                         )
                         player.inventory.setItem(
-                            1, mathematician.skill[0]
+                            1, LOCALIZATION.warlock.skill[0]
                         )
                         player.inventory.setItem(
-                            2, mathematician.skill[1]
+                            2, LOCALIZATION.warlock.skill[1]
                         )
                         player.inventory.setItem(
-                            3, mathematician.skill[2]
+                            3, LOCALIZATION.warlock.skill[2]
                         )
                         player.inventory.setItem(
-                            8, mathematician.skill[3]
-                        )
-                    }
-
-                    player.scoreboardTags.contains(physicist.name) -> {
-                        player.inventory.setItem(
-                            0, wizardweapon
-                        )
-                        player.inventory.setItem(
-                            1, physicist.skill[0]
-                        )
-                        player.inventory.setItem(
-                            2, physicist.skill[1]
-                        )
-                        player.inventory.setItem(
-                            3, physicist.skill[2]
-                        )
-                        player.inventory.setItem(
-                            8, physicist.skill[3]
+                            8, LOCALIZATION.warlock.skill[3]
                         )
                     }
 
-                    player.scoreboardTags.contains(paladin.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.mathematician.name) -> {
                         player.inventory.setItem(
-                            0, paladinweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, paladin.skill[0]
+                            1, LOCALIZATION.mathematician.skill[0]
                         )
                         player.inventory.setItem(
-                            2, paladin.skill[1]
+                            2, LOCALIZATION.mathematician.skill[1]
                         )
                         player.inventory.setItem(
-                            3, paladin.skill[2]
+                            3, LOCALIZATION.mathematician.skill[2]
                         )
                         player.inventory.setItem(
-                            8, paladin.skill[3]
+                            8, LOCALIZATION.mathematician.skill[3]
                         )
                     }
 
-                    player.scoreboardTags.contains(bard.name) -> {
+                    player.scoreboardTags.contains(LOCALIZATION.physicist.name) -> {
                         player.inventory.setItem(
-                            0, bardweapon
+                            0, LOCALIZATION.wizardweapon
                         )
                         player.inventory.setItem(
-                            1, bard.skill[0]
+                            1, LOCALIZATION.physicist.skill[0]
                         )
                         player.inventory.setItem(
-                            2, bard.skill[1]
+                            2, LOCALIZATION.physicist.skill[1]
                         )
                         player.inventory.setItem(
-                            3, bard.skill[2]
+                            3, LOCALIZATION.physicist.skill[2]
                         )
                         player.inventory.setItem(
-                            8, bard.skill[3]
+                            8, LOCALIZATION.physicist.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.paladin.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.paladinweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.paladin.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.paladin.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.paladin.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.paladin.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.bard.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.bardweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.bard.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.bard.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.bard.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.bard.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.judge.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.judgeweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.judge.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.judge.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.judge.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.judge.skill[3]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.duelist.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.duelistweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.duelist.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.duelist.skill[3]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.duelist.skill[4]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.duelist.skill[5]
+                        )
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.astronomer.name) -> {
+                        player.inventory.setItem(
+                            0, LOCALIZATION.wizardweapon
+                        )
+                        player.inventory.setItem(
+                            1, LOCALIZATION.astronomer.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.astronomer.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.astronomer.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.astronomer.skill[3]
+                        )
+                        player.scoreboardTags.add("mana_user")
+                    }
+
+                    player.scoreboardTags.contains(LOCALIZATION.assassin.name) -> {
+                        player.inventory.setItem(
+                            1, LOCALIZATION.assassin.skill[0]
+                        )
+                        player.inventory.setItem(
+                            2, LOCALIZATION.assassin.skill[1]
+                        )
+                        player.inventory.setItem(
+                            3, LOCALIZATION.assassin.skill[2]
+                        )
+                        player.inventory.setItem(
+                            8, LOCALIZATION.assassin.skill[3]
                         )
                     }
                 }
@@ -835,7 +876,6 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                     } else {
                         if (sender is Player) {
                             if (sender.scoreboardTags.contains("training")) {
-                                CLASSWAR.instance.server.scheduler.cancelTasks(CLASSWAR.instance)
                                 sender.sendMessage("${ChatColor.GREEN}${ChatColor.BOLD}[!] 훈련장에서 나갔습니다.")
                                 sender.inventory.clear()
                                 val playerTags = sender.scoreboardTags.toList()
@@ -846,7 +886,6 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                                     sender.removePotionEffect(effect.type)
                                 }
                                 sender.teleport(Location(Bukkit.getWorld("world"), 10.0, -60.0, 0.0, 90F, 0F))
-
                             } else {
                                 sender.sendMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 현재 훈련중이 아닙니다.")
                             }
@@ -896,431 +935,495 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
 
         if (player?.scoreboardTags?.contains("Open_Menu") == true) {
             if (clickedItem != null) {
-                when (val displayName = clickedItem.itemMeta?.displayName) {
-                    berserker.name, archer.name, firewizard.name, waterwizard.name, timemanipulator.name, landwizard.name, windwizard.name, gravitationalmanipulator.name, gambler.name, knight.name, spaceoperator.name, lightningwizard.name, lightwizard.name, darkwizard.name, priests.name, warlock.name, mathematician.name, physicist.name -> {
-                        if (player.scoreboardTags.contains("training")) {
-                            player.sendMessage("선택한 클래스는 ${ChatColor.BOLD}$displayName${ChatColor.RESET}입니다.")
-                            player.removeScoreboardTag("Open_Menu")
-                            player.addScoreboardTag(displayName)
-                            player.closeInventory()
-                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 2.0F)
-                            when {
-                                player.scoreboardTags.contains(berserker.name) -> {
-                                    player.inventory.setItem(
-                                        0, berserker.weapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, berserker.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, berserker.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        8, berserker.skill[2]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(archer.name) -> {
-                                    player.inventory.setItem(
-                                        0, archer.weapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, archer.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, archer.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, archer.item[0]
-                                    )
-                                    player.inventory.setItem(
-                                        8, archer.skill[2]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(firewizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, firewizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, firewizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        8, firewizard.skill[2]
-                                    )
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(waterwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, waterwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, waterwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        8, waterwizard.skill[2]
-                                    )
-                                    player.speedIncrease(INFINITE_DURATION, 20)
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(timemanipulator.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, timemanipulator.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, timemanipulator.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, timemanipulator.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, timemanipulator.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(landwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, landwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, landwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, landwizard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, landwizard.skill[3]
-                                    )
-                                    player.damageReduction(INFINITE_DURATION, 40)
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(windwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, windwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, windwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, windwizard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, windwizard.skill[3]
-                                    )
-                                    player.addPotionEffect(
-                                        PotionEffect(
-                                            PotionEffectType.SLOW_FALLING, INFINITE_DURATION, 0, false, false, true
-                                        )
-                                    )
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(gravitationalmanipulator.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, gravitationalmanipulator.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, gravitationalmanipulator.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, gravitationalmanipulator.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, gravitationalmanipulator.skill[3]
-                                    )
-                                    player.scoreboardTags.add("gravity_user")
-                                    resetGravity(player)
-                                }
-
-                                player.scoreboardTags.contains(gambler.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, gambler.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, gambler.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, gambler.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, gambler.skill[3]
-                                    )
-                                    cardDeckReset()
-                                    cardDeckShuffle()
-                                    player.cardDraw(5)
-
-                                }
-
-                                player.scoreboardTags.contains(knight.name) -> {
-                                    player.inventory.setItem(
-                                        0, knightweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, knight.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, knight.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, knight.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, knight.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(spaceoperator.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, spaceoperator.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, spaceoperator.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, spaceoperator.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, spaceoperator.skill[3]
-                                    )
-                                    player.scoreboardTags.add("charge_user")
-                                }
-
-                                player.scoreboardTags.contains(lightningwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, lightningwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, lightningwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, lightningwizard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, lightningwizard.skill[3]
-                                    )
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(lightwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, lightwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, lightwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, lightwizard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, lightwizard.skill[3]
-                                    )
-                                    player.scoreboardTags.add("mana_user")
-                                    player.addPotionEffect(
-                                        PotionEffect(
-                                            PotionEffectType.NIGHT_VISION, INFINITE_DURATION, 0, false, false, true
-                                        )
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(darkwizard.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, darkwizard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, darkwizard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, darkwizard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, darkwizard.skill[3]
-                                    )
-                                    player.scoreboardTags.add("mana_user")
-                                }
-
-                                player.scoreboardTags.contains(priests.name) -> {
-                                    player.inventory.setItem(
-                                        0, priestsweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, priests.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, priests.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, priests.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, priests.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(warlock.name) -> {
-                                    player.inventory.setItem(
-                                        0, warlockweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, warlock.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, warlock.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, warlock.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, warlock.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(mathematician.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, mathematician.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, mathematician.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, mathematician.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, mathematician.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(physicist.name) -> {
-                                    player.inventory.setItem(
-                                        0, wizardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, physicist.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, physicist.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, physicist.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, physicist.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(paladin.name) -> {
-                                    player.inventory.setItem(
-                                        0, paladinweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, paladin.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, paladin.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, paladin.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, paladin.skill[3]
-                                    )
-                                }
-
-                                player.scoreboardTags.contains(bard.name) -> {
-                                    player.inventory.setItem(
-                                        0, bardweapon
-                                    )
-                                    player.inventory.setItem(
-                                        1, bard.skill[0]
-                                    )
-                                    player.inventory.setItem(
-                                        2, bard.skill[1]
-                                    )
-                                    player.inventory.setItem(
-                                        3, bard.skill[2]
-                                    )
-                                    player.inventory.setItem(
-                                        8, bard.skill[3]
-                                    )
-                                }
-                            }
-                        } else {
-                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 2.0F)
-                            val selectedClassMessage =
-                                "${player.name}님이 선택한 클래스는 ${ChatColor.BOLD}$displayName${ChatColor.RESET}입니다."
-                            player.setPlayerListName(player.name + " ${ChatColor.WHITE}${ChatColor.BOLD}[ $displayName ]")
-                            Bukkit.broadcastMessage(selectedClassMessage)
-
-                            player.removeScoreboardTag("Open_Menu")
-                            player.addScoreboardTag(displayName)
-                            event.currentItem = null
-                            player.closeInventory()
-
-                            if (currentIndex < shuffledPlayers.size) {
-                                openMenuInventory(shuffledPlayers.elementAtOrNull(currentIndex)!!)
-                            } else {
-                                currentIndex = 0
-                                val allPlayersSelectedMessage = "${ChatColor.YELLOW}모든 플레이어의 클래스 선택이 종료되었습니다."
-                                teams = mutableMapOf(
-                                    "RedTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("RedTeam"),
-                                    "BlueTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("BlueTeam"),
-                                    "SpectatorTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("SpectatorTeam")
+                if (LOCALIZATION.classList.contains(clickedItem.itemMeta.displayName)) {
+                    val displayName = clickedItem.itemMeta.displayName
+                    if (player.scoreboardTags.contains("training")) {
+                        player.sendMessage("선택한 클래스는 ${ChatColor.BOLD}$displayName${ChatColor.RESET}입니다.")
+                        player.removeScoreboardTag("Open_Menu")
+                        player.addScoreboardTag(displayName)
+                        player.closeInventory()
+                        player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 2.0F)
+                        when {
+                            player.scoreboardTags.contains(LOCALIZATION.berserker.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.berserker.weapon
                                 )
-                                Bukkit.broadcastMessage(allPlayersSelectedMessage)
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.berserker.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.berserker.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.berserker.skill[2]
+                                )
+                            }
 
-                                CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                                    val moveTeamMessage = "${ChatColor.YELLOW}잠시 후 팀 등록 공간으로 이동합니다."
-                                    Bukkit.broadcastMessage(moveTeamMessage)
+                            player.scoreboardTags.contains(LOCALIZATION.archer.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.archer.weapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.archer.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.archer.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.archer.item[0]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.archer.skill[2]
+                                )
+                            }
 
-                                    CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
-                                        teamPick(player)
-                                    }, 30L)
-                                }, 30L)
+                            player.scoreboardTags.contains(LOCALIZATION.firewizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.firewizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.firewizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.firewizard.skill[2]
+                                )
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.waterwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.waterwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.waterwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.waterwizard.skill[2]
+                                )
+                                player.speedIncrease(INFINITE_DURATION, 20)
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.timemanipulator.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.timemanipulator.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.timemanipulator.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.timemanipulator.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.timemanipulator.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.landwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.landwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.landwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.landwizard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.landwizard.skill[3]
+                                )
+                                player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, INFINITE_DURATION, 1, false, false, true))
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.windwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.windwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.windwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.windwizard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.windwizard.skill[3]
+                                )
+                                player.addPotionEffect(
+                                    PotionEffect(
+                                        PotionEffectType.SLOW_FALLING, INFINITE_DURATION, 0, false, false, true
+                                    )
+                                )
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.gravitationalmanipulator.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.gravitationalmanipulator.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.gravitationalmanipulator.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.gravitationalmanipulator.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.gravitationalmanipulator.skill[3]
+                                )
+                                player.scoreboardTags.add("gravity_user")
+                                Skill.resetGravity(player)
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.gambler.name) -> {
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.gambler.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.gambler.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.gambler.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.gambler.skill[3]
+                                )
+                                Skill.cardDeckReset()
+                                Skill.cardDeckShuffle()
+                                player.cardDraw(5)
+
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.knight.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.knightweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.knight.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.knight.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.knight.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.knight.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.spaceoperator.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.spaceoperator.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.spaceoperator.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.spaceoperator.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.spaceoperator.skill[3]
+                                )
+                                player.scoreboardTags.add("charge_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.lightningwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.lightningwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.lightningwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.lightningwizard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.lightningwizard.skill[3]
+                                )
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.lightwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.lightwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.lightwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.lightwizard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.lightwizard.skill[3]
+                                )
+                                player.scoreboardTags.add("mana_user")
+                                player.addPotionEffect(
+                                    PotionEffect(
+                                        PotionEffectType.NIGHT_VISION, INFINITE_DURATION, 0, false, false, true
+                                    )
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.darkwizard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.darkwizard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.darkwizard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.darkwizard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.darkwizard.skill[3]
+                                )
+                                player.scoreboardTags.add("mana_user")
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.priests.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.priestsweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.priests.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.priests.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.priests.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.priests.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.warlock.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.warlockweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.warlock.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.warlock.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.warlock.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.warlock.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.mathematician.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.mathematician.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.mathematician.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.mathematician.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.mathematician.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.physicist.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.physicist.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.physicist.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.physicist.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.physicist.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.paladin.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.paladinweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.paladin.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.paladin.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.paladin.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.paladin.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.bard.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.bardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.bard.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.bard.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.bard.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.bard.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.judge.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.judgeweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.judge.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.judge.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.judge.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.judge.skill[3]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.duelist.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.duelistweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.duelist.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.duelist.skill[3]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.duelist.skill[4]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.duelist.skill[5]
+                                )
+                            }
+
+                            player.scoreboardTags.contains(LOCALIZATION.astronomer.name) -> {
+                                player.inventory.setItem(
+                                    0, LOCALIZATION.wizardweapon
+                                )
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.astronomer.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.astronomer.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.astronomer.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.astronomer.skill[3]
+                                )
+                                player.scoreboardTags.add("mana_user")
+                            }
+                            player.scoreboardTags.contains(LOCALIZATION.assassin.name) -> {
+                                player.inventory.setItem(
+                                    1, LOCALIZATION.assassin.skill[0]
+                                )
+                                player.inventory.setItem(
+                                    2, LOCALIZATION.assassin.skill[1]
+                                )
+                                player.inventory.setItem(
+                                    3, LOCALIZATION.assassin.skill[2]
+                                )
+                                player.inventory.setItem(
+                                    8, LOCALIZATION.assassin.skill[3]
+                                )
                             }
                         }
-                    }
+                    } else {
+                        player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 2.0F)
+                        val selectedClassMessage =
+                            "${player.name}님이 선택한 클래스는 ${ChatColor.BOLD}$displayName${ChatColor.RESET}입니다."
+                        player.setPlayerListName(player.name + " ${ChatColor.WHITE}${ChatColor.BOLD}[ $displayName ]")
+                        Bukkit.broadcastMessage(selectedClassMessage)
 
-                    else -> {
-                        player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 0.5F)
+                        player.removeScoreboardTag("Open_Menu")
+                        player.addScoreboardTag(displayName)
+                        event.currentItem = null
+                        player.closeInventory()
+
+                        if (currentIndex < shuffledPlayers.size) {
+                            openMenuInventory(shuffledPlayers.elementAtOrNull(currentIndex)!!)
+                        } else {
+                            currentIndex = 0
+                            val allPlayersSelectedMessage = "${ChatColor.YELLOW}모든 플레이어의 클래스 선택이 종료되었습니다."
+                            teams = mutableMapOf(
+                                "RedTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("RedTeam"),
+                                "BlueTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("BlueTeam"),
+                                "SpectatorTeam" to Bukkit.getScoreboardManager().mainScoreboard.getTeam("SpectatorTeam")
+                            )
+                            Bukkit.broadcastMessage(allPlayersSelectedMessage)
+
+                            CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
+                                val moveTeamMessage = "${ChatColor.YELLOW}잠시 후 팀 등록 공간으로 이동합니다."
+                                Bukkit.broadcastMessage(moveTeamMessage)
+
+                                CLASSWAR.instance.server.scheduler.runTaskLater(CLASSWAR.instance, Runnable {
+                                    teamPick(player)
+                                }, 30L)
+                            }, 30L)
+                        }
                     }
+                }
+                else {
+                    player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.0F, 0.5F)
                 }
             }
             event.isCancelled = true
@@ -1380,16 +1483,21 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
     fun onInventoryClose(event: InventoryCloseEvent) {
         val player = event.player
 
-        if (player.scoreboardTags.contains("Open_Menu")) {
+        if (player !is Player) return
+        if (player.scoreboardTags.contains("Open_Menu") && !player.isTraining()) {
             Bukkit.broadcastMessage("${ChatColor.RED}${ChatColor.BOLD}[!] ${player.name}님이 클래스 선택을 거부하여 게임이 종료됩니다.")
             gameEnd()
-        } else if (player.scoreboardTags.contains("Training_Menu")) {
+        } else if (player.scoreboardTags.contains("Open_Menu") && player.isTraining()) {
             player.sendMessage("${ChatColor.RED}${ChatColor.BOLD}[!] 클래스 선택을 거부하여 훈련이 종료됩니다.")
-            player.teleport(Location(Bukkit.getWorld("world"), 10.0, -60.0, 0.0, 90F, 0F))
+            player.inventory.clear()
             val playerTags = player.scoreboardTags.toList()
             for (tag in playerTags) {
                 player.removeScoreboardTag(tag)
             }
+            player.activePotionEffects.forEach { effect ->
+                player.removePotionEffect(effect.type)
+            }
+            player.teleport(Location(Bukkit.getWorld("world"), 10.0, -60.0, 0.0, 90F, 0F))
         }
     }
 
@@ -1403,6 +1511,8 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                 if (!damagedEntity.isBattlefield()) {
                     event.isCancelled = true
                 }
+
+                event.damage *= (damagedEntity.scoreboard.getObjective("DamageMultiplier")?.getScore(damagedEntity.name)!!.score / 100)
             }
         }
     }
@@ -1449,7 +1559,7 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
                     player.inventory.clear()
                     player.health = player.maxHealth
                     player.fireTicks = 0
-                    player.gameMode = GameMode.ADVENTURE
+                    player.gameMode = GameMode.SPECTATOR
                 }
             } else if (player.isTeam("BlueTeam")) {
                 if (teams["BlueTeam"]?.players?.size == 1) {
@@ -1490,220 +1600,264 @@ class GameManager : Listener, CommandExecutor, TabCompleter {
             when (barrel.customName) {
                 "${ChatColor.BOLD}광전사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, berserker.weapon)
-                    barrel.inventory.setItem(10, berserker.skill[0])
-                    barrel.inventory.setItem(11, berserker.skill[1])
-                    barrel.inventory.setItem(17, berserker.skill[2])
+                    barrel.inventory.setItem(9, LOCALIZATION.berserker.weapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.berserker.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.berserker.skill[1])
+                    barrel.inventory.setItem(17, LOCALIZATION.berserker.skill[2])
                 }
 
                 "${ChatColor.BOLD}궁수" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
 
-                    barrel.inventory.setItem(9, archer.weapon)
-                    barrel.inventory.setItem(10, archer.skill[0])
-                    barrel.inventory.setItem(11, archer.skill[1])
-                    barrel.inventory.setItem(12, archer.item[0])
-                    barrel.inventory.setItem(17, archer.skill[2])
+                    barrel.inventory.setItem(9, LOCALIZATION.archer.weapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.archer.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.archer.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.archer.item[0])
+                    barrel.inventory.setItem(17, LOCALIZATION.archer.skill[2])
                 }
 
                 "${ChatColor.BOLD}불마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, firewizard.skill[0])
-                    barrel.inventory.setItem(11, firewizard.skill[1])
-                    barrel.inventory.setItem(17, firewizard.skill[2])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.firewizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.firewizard.skill[1])
+                    barrel.inventory.setItem(17, LOCALIZATION.firewizard.skill[2])
                 }
 
                 "${ChatColor.BOLD}물마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, waterwizard.skill[0])
-                    barrel.inventory.setItem(11, waterwizard.skill[1])
-                    barrel.inventory.setItem(17, waterwizard.skill[2])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.waterwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.waterwizard.skill[1])
+                    barrel.inventory.setItem(17, LOCALIZATION.waterwizard.skill[2])
                 }
 
                 "${ChatColor.BOLD}시간 조작자" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, timemanipulator.skill[0])
-                    barrel.inventory.setItem(11, timemanipulator.skill[1])
-                    barrel.inventory.setItem(12, timemanipulator.skill[2])
-                    barrel.inventory.setItem(17, timemanipulator.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.timemanipulator.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.timemanipulator.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.timemanipulator.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.timemanipulator.skill[3])
                 }
 
                 "${ChatColor.BOLD}대지 마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, landwizard.skill[0])
-                    barrel.inventory.setItem(11, landwizard.skill[1])
-                    barrel.inventory.setItem(12, landwizard.skill[2])
-                    barrel.inventory.setItem(17, landwizard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.landwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.landwizard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.landwizard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.landwizard.skill[3])
                 }
 
                 "${ChatColor.BOLD}바람 마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, windwizard.skill[0])
-                    barrel.inventory.setItem(11, windwizard.skill[1])
-                    barrel.inventory.setItem(12, windwizard.skill[2])
-                    barrel.inventory.setItem(17, windwizard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.windwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.windwizard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.windwizard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.windwizard.skill[3])
                 }
 
                 "${ChatColor.BOLD}중력 조작자" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, gravitationalmanipulator.skill[0])
-                    barrel.inventory.setItem(11, gravitationalmanipulator.skill[1])
-                    barrel.inventory.setItem(12, gravitationalmanipulator.skill[2])
-                    barrel.inventory.setItem(17, gravitationalmanipulator.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.gravitationalmanipulator.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.gravitationalmanipulator.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.gravitationalmanipulator.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.gravitationalmanipulator.skill[3])
                 }
 
                 "${ChatColor.BOLD}도박사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, gambler.skill[0])
-                    barrel.inventory.setItem(11, gambler.skill[1])
-                    barrel.inventory.setItem(12, gambler.skill[2])
-                    barrel.inventory.setItem(17, gambler.skill[3])
+                    barrel.inventory.setItem(10, LOCALIZATION.gambler.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.gambler.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.gambler.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.gambler.skill[3])
                 }
 
                 "${ChatColor.BOLD}기사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, knightweapon)
-                    barrel.inventory.setItem(10, knight.skill[0])
-                    barrel.inventory.setItem(11, knight.skill[1])
-                    barrel.inventory.setItem(12, knight.skill[2])
-                    barrel.inventory.setItem(17, knight.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.knightweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.knight.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.knight.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.knight.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.knight.skill[3])
                 }
 
                 "${ChatColor.BOLD}공간 조작자" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, spaceoperator.skill[0])
-                    barrel.inventory.setItem(11, spaceoperator.skill[1])
-                    barrel.inventory.setItem(12, spaceoperator.skill[2])
-                    barrel.inventory.setItem(17, spaceoperator.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.spaceoperator.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.spaceoperator.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.spaceoperator.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.spaceoperator.skill[3])
                 }
 
                 "${ChatColor.BOLD}번개 마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, lightningwizard.skill[0])
-                    barrel.inventory.setItem(11, lightningwizard.skill[1])
-                    barrel.inventory.setItem(12, lightningwizard.skill[2])
-                    barrel.inventory.setItem(17, lightningwizard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.lightningwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.lightningwizard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.lightningwizard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.lightningwizard.skill[3])
                 }
 
                 "${ChatColor.BOLD}빛 마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, lightwizard.skill[0])
-                    barrel.inventory.setItem(11, lightwizard.skill[1])
-                    barrel.inventory.setItem(12, lightwizard.skill[2])
-                    barrel.inventory.setItem(17, lightwizard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.lightwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.lightwizard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.lightwizard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.lightwizard.skill[3])
                 }
 
                 "${ChatColor.BOLD}어둠 마법사" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, darkwizard.skill[0])
-                    barrel.inventory.setItem(11, darkwizard.skill[1])
-                    barrel.inventory.setItem(12, darkwizard.skill[2])
-                    barrel.inventory.setItem(17, darkwizard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.darkwizard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.darkwizard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.darkwizard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.darkwizard.skill[3])
                 }
 
                 "${ChatColor.BOLD}사제" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, priestsweapon)
-                    barrel.inventory.setItem(10, priests.skill[0])
-                    barrel.inventory.setItem(11, priests.skill[1])
-                    barrel.inventory.setItem(12, priests.skill[2])
-                    barrel.inventory.setItem(17, priests.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.priestsweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.priests.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.priests.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.priests.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.priests.skill[3])
                 }
 
                 "${ChatColor.BOLD}워락" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, warlockweapon)
-                    barrel.inventory.setItem(10, warlock.skill[0])
-                    barrel.inventory.setItem(11, warlock.skill[1])
-                    barrel.inventory.setItem(12, warlock.skill[2])
-                    barrel.inventory.setItem(17, warlock.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.warlockweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.warlock.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.warlock.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.warlock.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.warlock.skill[3])
                 }
 
                 "${ChatColor.BOLD}수학자" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, mathematician.skill[0])
-                    barrel.inventory.setItem(11, mathematician.skill[1])
-                    barrel.inventory.setItem(12, mathematician.skill[2])
-                    barrel.inventory.setItem(17, mathematician.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.mathematician.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.mathematician.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.mathematician.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.mathematician.skill[3])
                 }
 
                 "${ChatColor.BOLD}물리학자" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, wizardweapon)
-                    barrel.inventory.setItem(10, physicist.skill[0])
-                    barrel.inventory.setItem(11, physicist.skill[1])
-                    barrel.inventory.setItem(12, physicist.skill[2])
-                    barrel.inventory.setItem(17, physicist.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.physicist.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.physicist.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.physicist.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.physicist.skill[3])
                 }
 
                 "${ChatColor.BOLD}팔라딘" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, paladinweapon)
-                    barrel.inventory.setItem(10, paladin.skill[0])
-                    barrel.inventory.setItem(11, paladin.skill[1])
-                    barrel.inventory.setItem(12, paladin.skill[2])
-                    barrel.inventory.setItem(17, paladin.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.paladinweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.paladin.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.paladin.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.paladin.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.paladin.skill[3])
                 }
 
                 "${ChatColor.BOLD}바드" -> {
                     for (i in 0 until barrel.inventory.size) {
-                        barrel.inventory.setItem(i, nullpane)
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
                     }
-                    barrel.inventory.setItem(9, bardweapon)
-                    barrel.inventory.setItem(10, bard.skill[0])
-                    barrel.inventory.setItem(11, bard.skill[1])
-                    barrel.inventory.setItem(12, bard.skill[2])
-                    barrel.inventory.setItem(17, bard.skill[3])
+                    barrel.inventory.setItem(9, LOCALIZATION.bardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.bard.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.bard.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.bard.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.bard.skill[3])
+                }
+
+                "${ChatColor.BOLD}심판자" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
+                    }
+                    barrel.inventory.setItem(9, LOCALIZATION.judgeweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.judge.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.judge.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.judge.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.judge.skill[3])
+                }
+
+                "${ChatColor.BOLD}결투가" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
+                    }
+                    barrel.inventory.setItem(9, LOCALIZATION.duelistweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.duelist.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.duelist.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.duelist.skill[2])
+                    barrel.inventory.setItem(13, LOCALIZATION.duelist.skill[3])
+                    barrel.inventory.setItem(14, LOCALIZATION.duelist.skill[4])
+                    barrel.inventory.setItem(17, LOCALIZATION.duelist.skill[5])
+                }
+
+                "${ChatColor.BOLD}천문학자" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
+                    }
+                    barrel.inventory.setItem(9, LOCALIZATION.wizardweapon)
+                    barrel.inventory.setItem(10, LOCALIZATION.astronomer.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.astronomer.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.astronomer.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.astronomer.skill[3])
+                }
+
+                "${ChatColor.BOLD}암살자" -> {
+                    for (i in 0 until barrel.inventory.size) {
+                        barrel.inventory.setItem(i, LOCALIZATION.nullpane)
+                    }
+                    barrel.inventory.setItem(10, LOCALIZATION.assassin.skill[0])
+                    barrel.inventory.setItem(11, LOCALIZATION.assassin.skill[1])
+                    barrel.inventory.setItem(12, LOCALIZATION.assassin.skill[2])
+                    barrel.inventory.setItem(17, LOCALIZATION.assassin.skill[3])
                 }
             }
         }
